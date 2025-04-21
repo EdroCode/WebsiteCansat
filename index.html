@@ -197,14 +197,14 @@
         pressureChart.data.labels.push(now);
         tempChart.data.datasets[0].data.push(data.temperature);
         humidityChart.data.datasets[0].data.push(data.humidity);
-        pressureChart.data.datasets[0].data.push(data.pressure);
+        pressureChart.data.datasets[0].data.push(data.pressure.toFixed(5));
         tempChart.update();
         humidityChart.update();
         pressureChart.update();
 
         document.getElementById('tempValue').textContent = `${data.temperature} °C`;
         document.getElementById('humidityValue').textContent = `${data.humidity} %`;
-        document.getElementById('pressureValue').textContent = `${data.pressure} hPa`;
+        document.getElementById('pressureValue').textContent = `${data.pressure.toFixed(5)} hPa`;
         document.getElementById('altitudeValue').textContent = `${data.altitude} m`;
         document.getElementById('latValue').textContent = data.latitude;
         document.getElementById('lonValue').textContent = data.longitude;
@@ -265,7 +265,7 @@
 
 
     function exportToCSV() {
-    const headers = ['Timestamp', 'Temperature (°C)', 'Humidity (%)', 'Pressure (hPa)', 'Altitude (m)', 'Latitude', 'Longitude', 'PI Temperature (°C)'];
+    const headers = ['Timestamp', 'Temperature (°C)', 'Humidity (%)', 'Pressure (hPa)', 'Altitude (m)', 'Latitude', 'Longitude'];
     const rows = collectedData.map(item => [
       item.timestamp, 
       item.temperature, 
@@ -273,8 +273,7 @@
       item.pressure, 
       item.altitude, 
       item.latitude, 
-      item.longitude, 
-      item.pi_temp
+      item.longitude
     ])
   
       const csvContent = "data:text/csv;charset=utf-8," 
