@@ -1,3 +1,4 @@
+
 from flask import Flask, Response, jsonify
 from flask_cors import CORS
 import threading
@@ -5,12 +6,15 @@ import json
 import paramiko
 import re
 import queue
+import time
+import random
 
 app = Flask(__name__)
-CORS(app)  
+CORS(app)
 
 data_queue = queue.Queue()
 
+# Função real de SSH (desativada durante teste)
 def ssh_data_fetcher():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -28,8 +32,39 @@ def ssh_data_fetcher():
             except:
                 continue
 
-# Eliminar antes do lançamento, pode ser um risco de segurança (so existe para meios de teste)
-# No momento esta desativado
+
+def fake_gps_generator():
+    lat = 41.5600
+    lon = -8.4000
+
+    while True:
+
+
+        lat_change = random.uniform(-0.005, 0.005) 
+        lon_change = random.uniform(-0.005, 0.005)  
+
+        lat += lat_change
+        lon += lon_change
+
+        fake_data = {
+            "latitude": lat,
+            "longitude": lon,
+            "temperature": random.randrange(20, 40),
+            "humidity": random.randrange(20, 40),
+            "pressure": random.randrange(10000, 11000),
+            "altitude": random.randrange(60, 80),
+            "beta": 0,
+            "muons": 0,
+            "gases": 0,
+            "uv": 0,
+            "ozone": 0,
+            "pi_temp": random.randrange(50, 80)
+        }
+
+        data_queue.put(fake_data)
+        time.sleep(1) 
+
+
 
 def shutdown():
     ssh = paramiko.SSHClient()
@@ -47,7 +82,6 @@ def shutdown_pi():
     except Exception as e:
         print("Erro ao desligar:", e)
         return jsonify(status="error", message=str(e)), 500
-    
 
 @app.route("/stream")
 def stream():
@@ -58,5 +92,8 @@ def stream():
     return Response(event_stream(), mimetype="text/event-stream")
 
 if __name__ == "__main__":
-    threading.Thread(target=ssh_data_fetcher, daemon=True).start()
+    # Usa apenas 1 thread de cada vez: fake_gps_generator (teste) OU ssh_data_fetcher (produção)
+    threading.Thread(target=fake_gps_generator, daemon=True).start()
+    # threading.Thread(target=ssh_data_fetcher, daemon=True).start()
+
     app.run(host="0.0.0.0", port=5000)
