@@ -72,10 +72,6 @@
       <p id="lonValue" class="text-2xl">--</p>
     </div>
     <div class="bg-white shadow rounded-xl p-4">
-      <h2 class="text-xl font-semibold">Temperatura PI</h2>
-      <p id="PIvalue" class="text-2xl">-- °C</p>
-    </div>
-    <div class="bg-white shadow rounded-xl p-4">
       <h2 class="text-xl font-semibold">Distância  Percorrida</h2>
       <p id="distanciaPercorrida" class="text-2xl">-- m</p>
     </div>
@@ -87,6 +83,23 @@
       <h2 class="text-xl font-semibold">Velocidade Média</h2>
       <p id="velMed" class="text-2xl">-- m/s</p>
     </div>
+    <div class="bg-white shadow rounded-xl p-4">
+      <h2 class="text-xl font-semibold">Temperatura PI</h2>
+      <p id="PIvalue" class="text-2xl">-- °C</p>
+    </div>
+    <div class="bg-white shadow rounded-xl p-4">
+      <h2 class="text-xl font-semibold">Aceleração (X, Y, Z)</h2>
+      <p id="accelX" class="text-2xl">-- m/s²</p>
+      <p id="accelY" class="text-2xl">-- m/s²</p>
+      <p id="accelZ" class="text-2xl">-- m/s²</p>
+    </div>
+    <div class="bg-white shadow rounded-xl p-4">
+      <h2 class="text-xl font-semibold">Giroscópio (X, Y, Z)</h2>
+      <p id="gyroX" class="text-2xl">-- °/s</p>
+      <p id="gyroY" class="text-2xl">-- °/s</p>
+      <p id="gyroZ" class="text-2xl">-- °/s</p>
+    </div>
+    
   </div>
 
   <hr class="my-10 border-t-4 border-gray-300">
@@ -437,6 +450,13 @@
         displayValue('latValue', data.latitude);
         displayValue('lonValue', data.longitude);
         displayValue('PIvalue', data.pi_temp, ' °C');
+        displayValue('accelX', data.accel_x.toFixed(3) + ' m/s²');
+        displayValue('accelY', data.accel_y.toFixed(3) + ' m/s²');
+        displayValue('accelZ', data.accel_z.toFixed(3) + ' m/s²');
+        displayValue('gyroX', data.gyro_x.toFixed(3) + ' °/s');
+        displayValue('gyroY', data.gyro_y.toFixed(3) + ' °/s');
+        displayValue('gyroZ', data.gyro_z.toFixed(3) + ' °/s');
+      
 
         const currentTime = Date.now();
         
