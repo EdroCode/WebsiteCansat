@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Limiar</title>
+  <title>Limiar Dashboard</title>
   <link rel="icon" type="image/x-icon" href="file:///c%3A/Users/pedro/Desktop/CanSat/LandStation/Resources/dashboard.png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  
 </head>
 <body class="bg-gray-100 text-gray-800 p-4">
 
@@ -16,12 +17,18 @@
     <a href="https://aecarlosamarante.pt/" target="_blank">
       <img src="file:///c%3A/Users/pedro/Desktop/CanSat/LandStation/Resources/CarlosAmarante.png" alt="Logo Carlos" class="h-16 mx-auto mb-4 hover:scale-105 transition duration-200">
     </a>
-    <h1 class="text-3xl font-bold text-gray-800">Visualização Pública - LIMIAR</h1>
+    <h1 class="text-3xl font-bold text-gray-800">Painel de Dados - LIMIAR</h1>
   </header>
 
-  <div class="flex justify-center gap-4 mb-6">
+  <div class="flex justify-center gap-4 mb-6 ">
     <button id="startButton" class="hover:scale-105 transition duration-200 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition">
-      Atualizar
+      Iniciar
+    </button>
+    <button id="stopButton" class="hover:scale-105 transition duration-200 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition">
+      Parar
+    </button>
+    <button id="resetButton" class="hover:scale-105 transition duration-200 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition">
+      Reiniciar
     </button>
     <button id="downloadCSV" class="hover:scale-105 transition duration-200 bg-blue-400 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl shadow-md transition">
       Exportar CSV
@@ -35,8 +42,8 @@
   </div>
 
   <hr class="my-10 border-t-4 border-gray-300">
-  <h2 class="text-2xl font-bold mb-4">Painel de Dados --
-      Status: <span id="statusText" class="text-green-500 font-bold">Ativo</span>
+  <h2 class="text-2xl font-bold mb-4">Painel de Controlo --
+      Status: <span id="statusText" class="text-yellow-500 font-bold" >Parado</span>
   </h2>
 
   <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -69,7 +76,7 @@
       <p id="PIvalue" class="text-2xl">-- °C</p>
     </div>
     <div class="bg-white shadow rounded-xl p-4">
-      <h2 class="text-xl font-semibold">Distância Percorrida</h2>
+      <h2 class="text-xl font-semibold">Distância  Percorrida</h2>
       <p id="distanciaPercorrida" class="text-2xl">-- m</p>
     </div>
     <div class="bg-white shadow rounded-xl p-4">
@@ -84,7 +91,13 @@
 
   <hr class="my-10 border-t-4 border-gray-300">
   <h2 class="text-2xl font-bold mb-4">Gráficos</h2>
-
+  <div class="flex items-center">
+    <span class="mr-4 text-gray-700 font-bold text-lg">Limitar a 50 pontos:</span>
+    <label class="relative inline-flex items-center cursor-pointer">
+      <input type="checkbox" id="limitDataToggle" class="sr-only peer">
+      <div class="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-green-500 peer-checked:after:translate-x-full peer-checked:after:bg-white peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all"></div>
+    </label>
+  </div>  
   <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="bg-white shadow rounded-xl p-4">
       <h3 class="text-lg font-semibold mb-2">Temperatura Interior</h3>
@@ -109,6 +122,8 @@
   <div id="map" class="w-full h-96 rounded-xl shadow-md"></div>
   <hr class="my-10 border-t-4 border-gray-300">
 
+  
+
   <div class="mt-2 mb-4 px-2 flex justify-between items-center">
     <div class="text-left space-x-4">
       <label>
@@ -119,8 +134,33 @@
     </div>
   </div>
 
+
   <script>
+
     // GRAFICOS
+  
+    let limitDataPoints = false;
+    const MAX_DATA_POINTS = 50;
+
+    document.getElementById('limitDataToggle').addEventListener('change', function() {
+      limitDataPoints = this.checked;
+      if (limitDataPoints) {
+        trimAllCharts();
+      }
+    });
+
+    function trimAllCharts() {
+      const charts = [tempChart, humidityChart, pressureChart, altitudeChart];
+      charts.forEach(chart => {
+        if (chart.data.labels.length > MAX_DATA_POINTS) {
+          const excess = chart.data.labels.length - MAX_DATA_POINTS;
+          chart.data.labels.splice(0, excess);
+          chart.data.datasets[0].data.splice(0, excess);
+          chart.update();
+        }
+      });
+    }
+
     const tempChart = new Chart(document.getElementById('tempChart'), {
       type: 'line',
       data: {
@@ -174,27 +214,38 @@
     });
   
     // CLOCK & TIMER
-    let startTime = Date.now();
-    let intervalID = setInterval(updateElapsedTime, 1000);
+  
+    function startTimer() {
+      startTime = Date.now();
+      intervalID = setInterval(updateElapsedTime, 1000); 
+    }
   
     function updateElapsedTime() {
-      let elapsedTime = Math.floor((Date.now() - startTime) / 1000); 
-      let hours = Math.floor(elapsedTime / 3600); 
-      let minutes = Math.floor((elapsedTime % 3600) / 60); 
-      let seconds = elapsedTime % 60; 
+      if (startTime !== null) {
+        elapsedTime = Math.floor((Date.now() - startTime) / 1000); 
+        let hours = Math.floor(elapsedTime / 3600); 
+        let minutes = Math.floor((elapsedTime % 3600) / 60); 
+        let seconds = elapsedTime % 60; 
   
-      document.getElementById('tempoDecorrido').textContent = 
-        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        document.getElementById('tempoDecorrido').textContent = 
+          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+    }
+  
+    function stopTimer() {
+      clearInterval(intervalID); 
+      startTime = null; 
     }
   
     function updateClock() {
-      const now = new Date();
+      const now = new Date()
       const timeString = now.toLocaleTimeString('pt-PT');
       document.getElementById('clock').textContent = timeString;
     }
     setInterval(updateClock, 1000);
   
     // MAP
+  
     let pathCoords = [];
     let pathLine = null; 
     let lastTimestamp = null;
@@ -226,47 +277,69 @@
       }
     }
   
+    function resetMap() {
+        pathCoords = [];
+  
+        if (pathLine) {
+            map.removeLayer(pathLine);
+            pathLine = null;
+        }
+    }
+  
+    function resetTrail() {
+    trail = [];
+  
+      if (trailLine) {
+          map.removeLayer(trailLine);
+          trailLine = null;
+      }      
+    }
+  
+
     function downloadPath() {
-      if (pathCoords.length === 0) {
-        alert("No path data available to download!");
-        return;
-      }
+        if (pathCoords.length === 0) {
+            alert("No path data available to download!");
+            return;
+        }
 
-      alert("Para visualizar o ficheiro utilize um website para ler GEOJSON, como geojson.io")
+        alert("Para visualizar o ficheiro utilize um website para ler GEOJSON, como  geojson.io")
 
-      const geoJsonData = {
-        "type": "FeatureCollection",
-        "features": [
-          {
-            "type": "Feature",
-            "properties": {
-              "name": "GPS Path",
-              "description": "Recorded path coordinates"
-            },
-            "geometry": {
-              "type": "LineString",
-              "coordinates": pathCoords.map(coord => [coord[1], coord[0]])
-            }
-          }
-        ]
-      };
+        const geoJsonData = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "GPS Path",
+                        "description": "Recorded path coordinates"
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": pathCoords.map(coord => [coord[1], coord[0]]) // GeoJSON uses [lon, lat] order
+                    }
+                }
+            ]
+        };
 
-      const blob = new Blob([JSON.stringify(geoJsonData, null, 2)], { 
-        type: 'application/geo+json' 
-      });
-      
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "path_data.geojson";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+        // Create the download
+        const blob = new Blob([JSON.stringify(geoJsonData, null, 2)], { 
+            type: 'application/geo+json' 
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "path_data.geojson";  // Proper .geojson extension
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
     
+  
     function haversineDistance(coord1, coord2) {
       const toRad = x => x * Math.PI / 180;
+  
       const [lat1, lon1] = coord1;
       const [lat2, lon2] = coord2;
   
@@ -282,44 +355,56 @@
       return R * c; // distância em metros
     }
   
-    // DATA MANAGEMENT
-    let eventSource = null;
-    let collectedData = [];
-    
-    // Automatically start data updates when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      startDataUpdate();
-    });
+    // DATA MANEGEMENT
+    let startTime = null;
   
     function startDataUpdate() {
+  
+      startTimer()
+      
+      pathCoords = [];
+      startTime = Date.now();
+  
       document.getElementById('statusText').textContent = "Atualizando...";
       document.getElementById('statusText').classList.remove('text-yellow-500');
       document.getElementById('statusText').classList.add('text-green-500');
   
-      eventSource = new EventSource('http://localhost:5000/stream');
+      eventSource = new EventSource('http://192.168.1.92:5000/stream');
+  
+      // Basicamente o Update
   
       eventSource.onmessage = function(event) {
+        // Atualiza o status visual para indicar que os dados estão sendo recebidos
         document.getElementById('statusText').classList.remove('text-red-500');
         document.getElementById('statusText').classList.add('text-green-500');
-  
+
         const data = JSON.parse(event.data);
         const now = new Date().toLocaleTimeString();
-  
+
         console.log(data);
-  
+
+        // Function to handle null/undefined values
+        function getValueOrNull(value) {
+            return (value === null || value === undefined) ? null : value;
+        }
+
+        // Coleta os dados para processamento posterior
         collectedData.push({
-          timestamp: now,
-          temperature: data.temperature,
-          humidity: data.humidity,
-          pressure: data.pressure,
-          altitude: data.altitude,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          pi_temp: data.pi_temp
+            timestamp: now,
+            temperature: getValueOrNull(data.temperature),
+            humidity: getValueOrNull(data.humidity),
+            pressure: getValueOrNull(data.pressure),
+            altitude: getValueOrNull(data.altitude),
+            latitude: getValueOrNull(data.latitude),
+            longitude: getValueOrNull(data.longitude),
+            pi_temp: getValueOrNull(data.pi_temp)
         });
-  
+
+        // Função para atualizar gráficos com limitação de 100 pontos
         function updateChart(chart, label, value) {
-          if (chart.data.labels.length >= 100) {
+          if (value === null) return;
+  
+          if (limitDataPoints && chart.data.labels.length >= MAX_DATA_POINTS) {
             chart.data.labels.shift();
             chart.data.datasets[0].data.shift();
           }
@@ -327,87 +412,176 @@
           chart.data.datasets[0].data.push(value);
           chart.update();
         }
-  
-        updateChart(tempChart, now, data.temperature);
-        updateChart(humidityChart, now, data.humidity);
-        updateChart(pressureChart, now, data.pressure.toFixed(5));
-        updateChart(altitudeChart, now, data.altitude.toFixed(5));
-  
-        document.getElementById('tempValue').textContent = `${data.temperature} °C`;
-        document.getElementById('humidityValue').textContent = `${data.humidity} %`;
-        document.getElementById('pressureValue').textContent = `${data.pressure.toFixed(5)} hPa`;
-        document.getElementById('altitudeValue').textContent = `${data.altitude} m`;
-        document.getElementById('latValue').textContent = data.latitude;
-        document.getElementById('lonValue').textContent = data.longitude;
-        document.getElementById('PIvalue').textContent = `${data.pi_temp} °C`;
-  
-        const currentTime = Date.now();
-        updateMap(data.latitude, data.longitude);
-  
-        if (startTime && pathCoords.length > 1) {
-          const timeElapsed = (currentTime - startTime) / 1000;
-          const totalDistance = haversineDistance(pathCoords[0], pathCoords[pathCoords.length - 1]);
-          const averageSpeed = totalDistance / timeElapsed;
-          document.getElementById('velMed').textContent = `${(averageSpeed * 3.6).toFixed(2)} km/h`;
-        }
-  
-        if (pathCoords.length > 1 && lastTimestamp) {
-          const segmentDistance = haversineDistance(
-            pathCoords[pathCoords.length - 2],
-            pathCoords[pathCoords.length - 1]
-          );
-          const speed = calculateSpeed(currentTime, lastTimestamp, segmentDistance);
-          document.getElementById('vel').textContent = `${(speed * 3.6).toFixed(2)} km/h`;
-        }
-  
-        lastTimestamp = currentTime;
-  
-        const piTemp = data.pi_temp;
-        let tempColor = 'green';
-        if (piTemp > 75) {
-          tempColor = 'red';
-        } else if (piTemp > 60) {
-          tempColor = 'rgb(255, 148, 0)';
-        }
-        document.getElementById('PIvalue').style.color = tempColor;
-      };
-  
-      eventSource.onerror = function() {
-        document.getElementById('statusText').textContent = "Erro na Conexão!";
-        document.getElementById('statusText').classList.remove('text-green-500');
-        document.getElementById('statusText').classList.add('text-red-500');
-      };
-    }
-  
-    // CSV EXPORTING
-    function exportToCSV() {
-      const headers = ['Timestamp', 'Temperature (°C)', 'Humidity (%)', 'Pressure (hPa)', 'Altitude (m)', 'Latitude', 'Longitude'];
-      const rows = collectedData.map(item => [
-        item.timestamp, 
-        item.temperature, 
-        item.humidity, 
-        item.pressure, 
-        item.altitude, 
-        item.latitude, 
-        item.longitude
-      ]);
-  
-      const csvContent = "data:text/csv;charset=utf-8," 
-        + headers.join(",") + "\n" 
-        + rows.map(row => row.join(",")).join("\n");
-  
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "dados.csv");
-      link.click();
-    }
-  
-    // BUTTON MANAGEMENT
-    document.getElementById('downloadCSV').addEventListener('click', exportToCSV);
-    document.getElementById('downloadMAP').addEventListener('click', downloadPath);
-    document.getElementById('startButton').addEventListener('click', startDataUpdate);
 
+        // Atualiza os gráficos, limitando a 100 pontos (only non-null values)
+        if (data.temperature !== null && data.temperature !== undefined) updateChart(tempChart, now, data.temperature);
+        if (data.humidity !== null && data.humidity !== undefined) updateChart(humidityChart, now, data.humidity);
+        if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, now, data.pressure.toFixed(5));
+        if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
+
+        // Function to display value or "--" if null/undefined
+        function displayValue(elementId, value, unit = '') {
+            const element = document.getElementById(elementId);
+            if (value === null || value === undefined) {
+                element.textContent = `--${unit}`;
+            } else {
+                element.textContent = `${value}${unit}`;
+            }
+        }
+
+        // Atualiza os valores de texto no dashboard
+        displayValue('tempValue', data.temperature, ' °C');
+        displayValue('humidityValue', data.humidity, ' %');
+        displayValue('pressureValue', data.pressure ? data.pressure.toFixed(5) : null, ' hPa');
+        displayValue('altitudeValue', data.altitude, ' m');
+        displayValue('latValue', data.latitude);
+        displayValue('lonValue', data.longitude);
+        displayValue('PIvalue', data.pi_temp, ' °C');
+
+        const currentTime = Date.now();
+        
+        // Atualiza o mapa com a nova localização (only if both lat and lon are valid)
+        if (data.latitude !== null && data.latitude !== undefined && 
+            data.longitude !== null && data.longitude !== undefined) {
+            updateMap(data.latitude, data.longitude);
+        }
+
+        if (startTime && pathCoords.length > 1) {
+            const timeElapsed = (currentTime - startTime) / 1000; // segundos
+            const totalDistance = haversineDistance(pathCoords[0], pathCoords[pathCoords.length - 1]); // metros
+            const averageSpeed = totalDistance / timeElapsed; // m/s
+            document.getElementById('velMed').textContent = `${(averageSpeed * 3.6).toFixed(2)} km/h`;
+        }
+
+        if (pathCoords.length > 1 && lastTimestamp) {
+            const segmentDistance = haversineDistance(
+                pathCoords[pathCoords.length - 2],
+                pathCoords[pathCoords.length - 1]
+            );
+            const speed = calculateSpeed(currentTime, lastTimestamp, segmentDistance);
+            document.getElementById('vel').textContent = `${(speed * 3.6).toFixed(2)} km/h`; // converter m/s para km/h
+        }
+
+        lastTimestamp = currentTime;
+
+        const piTemp = data.pi_temp;
+        let tempColor = 'green'; // Default
+
+        if (piTemp !== null && piTemp !== undefined) {
+            if (piTemp > 75) {
+                tempColor = 'red';
+            } else if (piTemp > 60) {
+                tempColor = 'rgb(255, 148, 0)';
+            }
+            document.getElementById('PIvalue').style.color = tempColor; // Change the color of the Pi temperature value
+        } else {
+            document.getElementById('PIvalue').style.color = ''; // Reset color if null
+        }
+    };
+    eventSource.onerror = function() {
+      document.getElementById('statusText').textContent = "Erro na Conexão!";
+      document.getElementById('statusText').classList.remove('text-green-500');
+      document.getElementById('statusText').classList.add('text-red-500');
+      console.error("Error with the EventSource connection:", event);
+      stopDataUpdate(); 
+      // alert("Não foi possível conectar ao servidor. Verifique a conexão.");
+    };
+  }
+  
+  function stopDataUpdate() {
+    document.getElementById('statusText').classList.remove('text-green-500');
+    document.getElementById('statusText').classList.add('text-yellow-500');
+    if (eventSource) {
+      eventSource.close();
+      eventSource = null;
+    }
+    stopTimer()
+  }
+  
+  function stop() {
+    document.getElementById('statusText').textContent = "Parado";
+    stopDataUpdate()
+  }
+  
+  function resetData() {
+    resetMap();
+    pathCoords = [];
+    
+    collectedData = [];
+    tempChart.data.labels = [];
+    tempChart.data.datasets[0].data = [];
+    humidityChart.data.labels = [];
+    humidityChart.data.datasets[0].data = [];
+    pressureChart.data.labels = [];
+    pressureChart.data.datasets[0].data = [];
+    altitudeChart.data.labels = [];
+    altitudeChart.data.datasets[0].data = [];
+    tempChart.update();
+    humidityChart.update();
+    pressureChart.update();
+    altitudeChart.update();
+  
+  
+    document.getElementById('distanciaPercorrida').textContent = "-- km";
+    document.getElementById('velMed').textContent = "-- km/h";
+    document.getElementById('vel').textContent = "-- km/h";
+  
+    altitudeChart.update();
+  
+    document.getElementById('tempValue').textContent = "-- °C";
+    document.getElementById('humidityValue').textContent = "-- %";
+    document.getElementById('pressureValue').textContent = "-- hPa";
+    document.getElementById('altitudeValue').textContent = "-- m";
+    document.getElementById('latValue').textContent = "--";
+    document.getElementById('lonValue').textContent = "--";
+    document.getElementById('PIvalue').textContent = "-- °C";
+  
+    startTime = null;
+    document.getElementById('tempoDecorrido').textContent = "00:00:00";
+  }
+  
+
+
+  
+  // BUTTON MANAGEMENT
+  
+  document.getElementById('startButton').addEventListener('click', startDataUpdate);
+  document.getElementById('stopButton').addEventListener('click', stop);
+  document.getElementById('resetButton').addEventListener('click', resetData);
+  document.getElementById('downloadCSV').addEventListener('click', exportToCSV);
+  document.getElementById('downloadMAP').addEventListener('click', downloadPath);
+  
+  // CSV EXPORTING
+  
+  let eventSource = null;
+  let collectedData = [];
+  
+  function exportToCSV() {
+  const headers = ['Timestamp', 'Temperature (°C)', 'Humidity (%)', 'Pressure (hPa)', 'Altitude (m)', 'Latitude', 'Longitude'];
+  const rows = collectedData.map(item => [
+    item.timestamp, 
+    item.temperature, 
+    item.humidity, 
+    item.pressure, 
+    item.altitude, 
+    item.latitude, 
+    item.longitude
+  ])
+  
+    const csvContent = "data:text/csv;charset=utf-8," 
+    + headers.join(",") + "\n" 
+    + rows.map(row => row.join(",")).join("\n");
+  
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "dados.csv");
+  link.click();
+  }
   </script>
+  
+
+
+  
 </body>
 </html>

@@ -11,22 +11,47 @@ CORS(app)
 
 data_queue = queue.Queue()
 
+# def ssh_data_fetcher():
+#     ssh = paramiko.SSHClient()
+#     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+#     ssh.connect("192.168.1.190", port=22, username="cansat", password="esca")
+#     command = f"bash -i -c 'source /home/cansat/cansat/bin/activate && python3 /home/cansat/Code/CanSat/Python/Main.py'"
+#     stdin, stdout, stderr = ssh.exec_command(command, get_pty=True)
+
+#     pattern = re.compile(r"(\{.*\})")
+#     for line in stdout:
+#         match = pattern.search(line)
+#         if match:
+#             try:
+#                 data = eval(match.group()) 
+#                 data_queue.put(data)
+#             except:
+#                 continue
+
+
+# USAR EM CASO DE DEBUG
+
+
 def ssh_data_fetcher():
+    print("Iniciando conexão SSH...")
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect("192.168.1.190", port=22, username="cansat", password="esca")
+    print("Conectado!")
     command = f"bash -i -c 'source /home/cansat/cansat/bin/activate && python3 /home/cansat/Code/CanSat/Python/Main.py'"
     stdin, stdout, stderr = ssh.exec_command(command, get_pty=True)
 
     pattern = re.compile(r"\{.*?\}")
     for line in stdout:
+        print("RECEBIDO:", line)  # <--- debug
         match = pattern.search(line)
         if match:
             try:
-                data = eval(match.group()) 
+                data = json.loads(match.group())
                 data_queue.put(data)
-            except:
-                continue
+            except Exception as e:
+                print("Erro ao processar linha:", e)
+
 
 # Eliminar antes do lançamento, pode ser um risco de segurança (so existe para meios de teste)
 # No momento esta desativado
@@ -48,7 +73,6 @@ def shutdown_pi():
         print("Erro ao desligar:", e)
         return jsonify(status="error", message=str(e)), 500
     
-
 @app.route("/stream")
 def stream():
     def event_stream():
@@ -56,6 +80,7 @@ def stream():
             data = data_queue.get()
             yield f"data: {json.dumps(data)}\n\n"
     return Response(event_stream(), mimetype="text/event-stream")
+
 
 if __name__ == "__main__":
     threading.Thread(target=ssh_data_fetcher, daemon=True).start()
