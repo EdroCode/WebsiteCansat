@@ -76,6 +76,14 @@
       <p id="distanciaPercorrida" class="text-2xl">-- m</p>
     </div>
     <div class="bg-white shadow rounded-xl p-4">
+      <h2 class="text-xl font-semibold">Deslocamento</h2>
+      <p id="deslocamento" class="text-2xl">-- m</p>
+    </div>
+    <div class="bg-white shadow rounded-xl p-4">
+      <h2 class="text-xl font-semibold">Temperatura PI</h2>
+      <p id="PIvalue" class="text-2xl">-- °C</p>
+    </div>
+    <div class="bg-white shadow rounded-xl p-4">
       <h2 class="text-xl font-semibold">Velocidade</h2>
       <p id="vel" class="text-2xl">-- m/s</p>
     </div>
@@ -84,8 +92,8 @@
       <p id="velMed" class="text-2xl">-- m/s</p>
     </div>
     <div class="bg-white shadow rounded-xl p-4">
-      <h2 class="text-xl font-semibold">Temperatura PI</h2>
-      <p id="PIvalue" class="text-2xl">-- °C</p>
+      <h2 class="text-xl font-semibold"></h2>
+      <p id="" class="text-2xl">--</p>
     </div>
     <div class="bg-white shadow rounded-xl p-4">
       <h2 class="text-xl font-semibold">Aceleração (X, Y, Z)</h2>
@@ -127,6 +135,10 @@
     <div class="bg-white shadow rounded-xl p-4">
       <h3 class="text-lg font-semibold mb-2">Altitude</h3>
       <canvas id="altitudeChart"></canvas>
+    </div>
+    <div class="bg-white shadow rounded-xl p-4">
+      <h3 class="text-lg font-semibold mb-2">Velocidade</h3>
+      <canvas id="velChart"></canvas>
     </div>
   </div>
 
@@ -225,6 +237,19 @@
       },
       options: { responsive: true }
     });
+
+    const velChart = new Chart(document.getElementById('velChart'), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Velocidade (m/s)', 
+          borderColor: 'rgb(137, 93, 193)',
+          data: []
+        }]
+      },
+      options: { responsive: true }
+    });
   
     // CLOCK & TIMER
   
@@ -274,6 +299,8 @@
       return timeDiffSec > 0 ? (distanceMeters / timeDiffSec) : 0; // m/s
     }
   
+    var distance = 0
+
     function updateMap(lat, lon) {
       const newPoint = [lat, lon];
       pathCoords.push(newPoint);
@@ -285,8 +312,11 @@
       map.setView(newPoint, map.getZoom());
   
       if (pathCoords.length > 1) {
-        const distance = haversineDistance(pathCoords[0], pathCoords[pathCoords.length - 1]);
+        const des = haversineDistance(pathCoords[0], pathCoords[pathCoords.length - 1]);
+        document.getElementById('deslocamento').textContent = `${(des / 1000).toFixed(2)} km`;
+        distance += des
         document.getElementById('distanciaPercorrida').textContent = `${(distance / 1000).toFixed(2)} km`;
+
       }
     }
   
@@ -431,6 +461,7 @@
         if (data.humidity !== null && data.humidity !== undefined) updateChart(humidityChart, now, data.humidity);
         if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, now, data.pressure.toFixed(5));
         if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
+        
 
         // Function to display value or "--" if null/undefined
         function displayValue(elementId, value, unit = '') {
@@ -470,7 +501,8 @@
             const timeElapsed = (currentTime - startTime) / 1000; // segundos
             const totalDistance = haversineDistance(pathCoords[0], pathCoords[pathCoords.length - 1]); // metros
             const averageSpeed = totalDistance / timeElapsed; // m/s
-            document.getElementById('velMed').textContent = `${(averageSpeed * 3.6).toFixed(2)} km/h`;
+            document.getElementById('velMed').textContent = `${averageSpeed.toFixed(2)} m/s`;
+            
         }
 
         if (pathCoords.length > 1 && lastTimestamp) {
@@ -479,7 +511,8 @@
                 pathCoords[pathCoords.length - 1]
             );
             const speed = calculateSpeed(currentTime, lastTimestamp, segmentDistance);
-            document.getElementById('vel').textContent = `${(speed * 3.6).toFixed(2)} km/h`; // converter m/s para km/h
+            document.getElementById('vel').textContent = `${(speed).toFixed(2)} m/s`; // converter m/s para km/h
+            updateChart(velChart, now, speed.toFixed(5));
         }
 
         lastTimestamp = currentTime;
