@@ -46,26 +46,37 @@ def fake_gps_generator():
         lat += lat_change
         lon += lon_change
 
+
         fake_data = {
             "latitude": lat,
             "longitude": lon,
-            "temperature": random.randrange(20, 40),
-            "humidity": random.randrange(20, 40),
-            "pressure": random.randrange(10000, 11000),
-            "altitude": random.randrange(60, 80),
-            "accel_x": 0,
-            "accel_y": 0,
-            "accel_z": 0,
-            "gyro_x": 0,
-            "gyro_y": 0,
-            "gyro_z": 0,
-            "beta": 0,
-            "muons": 0,
-            "gases": 0,
-            "uv": 0,
-            "ozone": 0,
-            "pi_temp": random.randrange(50, 80)
+            "temperature": round(random.uniform(15, 18), 2),
+            "humidity": round(random.uniform(60, 85), 2),
+            "temperature_ext": round(random.uniform(17, 18), 2),
+            "humidity_ext": round(random.uniform(60, 65), 2),
+            "accel_x": round(random.uniform(-1, 1), 9),
+            "accel_y": round(random.uniform(-1, 1), 9),
+            "accel_z": round(random.uniform(-1, 1), 9),
+            "gyro_x": round(random.uniform(0, 10), 9),
+            "gyro_y": round(random.uniform(0, 10), 9),
+            "gyro_z": round(random.uniform(0, 10), 9),
+            "mag_x": None,
+            "mag_y": None,
+            "mag_z": None,
+            "pi_temp": round(random.uniform(45, 50), 1),
+            "latitude": lat,
+            "longitude": lon,
+            "altitude": round(random.uniform(80, 90), 2),
+            "pressure": round(random.uniform(1, 1.5), 2),
+            "temp_bmp": round(random.uniform(1, 1.5), 2),
+            "alt_bmp": round(random.uniform(31880, 31890), 2),
+            "uv": round(random.uniform(0, 5), 2),
+            "ambient_light": round(random.uniform(0.5, 1), 2),
+            "uvi": round(random.uniform(0, 1), 2),
+            "lux": round(random.uniform(0.5, 1), 2),
+            "cpl": random.randint(1, 10)
         }
+
 
         data_queue.put(fake_data)
         time.sleep(1) 

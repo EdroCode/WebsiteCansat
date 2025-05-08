@@ -10,6 +10,7 @@ app = Flask(__name__)
 CORS(app)  
 
 data_queue = queue.Queue()
+time_spent = 0
 
 # def ssh_data_fetcher():
 #     ssh = paramiko.SSHClient()
