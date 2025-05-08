@@ -494,22 +494,28 @@
 
         // Coleta os dados para processamento posterior
         collectedData.push({
-            timestamp: now,
-            temperature: getValueOrNull(data.temperature),
-            humidity: getValueOrNull(data.humidity),
-            external_temperature: getValueOrNull(data.temperature_ext),
-            external_humidity: getValueOrNull(data.humidity_ext),
-            pressure: getValueOrNull(data.pressure),
-            altitude: getValueOrNull(data.altitude),
-            latitude: getValueOrNull(data.latitude),
-            longitude: getValueOrNull(data.longitude),
-            pi_temp: getValueOrNull(data.pi_temp),
-            uv: getValueOrNull(data.uv), 
-            ambient_light: getValueOrNull(data.ambient_light), 
-            uvi: getValueOrNull(data.uvi), 
-            lux: getValueOrNull(data.lux),
-            cpl: getValueOrNull(data.cpl)
-        })
+          timestamp: now,
+          temperature: getValueOrNull(data.temperature),
+          humidity: getValueOrNull(data.humidity),
+          external_temperature: getValueOrNull(data.temperature_ext),
+          external_humidity: getValueOrNull(data.humidity_ext),
+          pressure: getValueOrNull(data.pressure),
+          altitude: getValueOrNull(data.altitude),
+          latitude: getValueOrNull(data.latitude),
+          longitude: getValueOrNull(data.longitude),
+          pi_temp: getValueOrNull(data.pi_temp),
+          uv: getValueOrNull(data.uv),
+          ambient_light: getValueOrNull(data.ambient_light),
+          uvi: getValueOrNull(data.uvi),
+          lux: getValueOrNull(data.lux),
+          cpm: getValueOrNull(cpmValue),
+          accelX: getValueOrNull(data.accel_x),
+          accelY: getValueOrNull(data.accel_y),
+          accelZ: getValueOrNull(data.accel_z),
+          gyroX: getValueOrNull(data.gyro_x),
+          gyroY: getValueOrNull(data.gyro_y),
+          gyroZ: getValueOrNull(data.gyro_z)
+      });
 
         // Função para atualizar gráficos com limitação de 100 pontos
         function updateChart(chart, label, value) {
@@ -730,14 +736,7 @@
 
 
   
-  // BUTTON MANAGEMENT
-  
-  document.getElementById('startButton').addEventListener('click', startDataUpdate);
-  document.getElementById('stopButton').addEventListener('click', stop);
-  document.getElementById('resetButton').addEventListener('click', resetData);
-  document.getElementById('downloadCSV').addEventListener('click', exportToCSV);
-  document.getElementById('downloadMAP').addEventListener('click', downloadPath);
-  
+
   // CSV EXPORTING
   
   let eventSource = null;
@@ -746,27 +745,112 @@
   // DEPOIS ATUALIZAR ISTO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   function exportToCSV() {
-  const headers = ['Timestamp', 'Temperature (°C)', 'Humidity (%)', 'Pressure (hPa)', 'Altitude (m)', 'Latitude', 'Longitude'];
-  const rows = collectedData.map(item => [
-    item.timestamp, 
-    item.temperature, 
-    item.humidity, 
-    item.pressure, 
-    item.altitude, 
-    item.latitude, 
-    item.longitude
-  ])
+    try {
+        if (!collectedData || collectedData.length === 0) {
+            alert("No data available to export!");
+            return;
+        }
+
+        console.log("Preparing CSV export with", collectedData.length, "data points");
+
+        // Define all headers
+        const headers = [
+            'Timestamp',
+            'Temperature (°C)',
+            'Humidity (%)',
+            'External Temperature (°C)',
+            'External Humidity (%)',
+            'Pressure (hPa)',
+            'Altitude (m)',
+            'Latitude',
+            'Longitude',
+            'PI Temperature (°C)',
+            'UV (μW/cm²)',
+            'Ambient Light (lux)',
+            'UVI',
+            'Lux (lux)',
+            'CPM',
+            'Acceleration X (m/s²)',
+            'Acceleration Y (m/s²)',
+            'Acceleration Z (m/s²)',
+            'Gyroscope X (°/s)',
+            'Gyroscope Y (°/s)',
+            'Gyroscope Z (°/s)'
+        ];
+
+        // Prepare CSV content
+        let csvContent = headers.join(",") + "\r\n";
+        
+        collectedData.forEach(item => {
+            const row = [
+                item.timestamp || '',
+                formatNumber(item.temperature, 2),
+                formatNumber(item.humidity, 2),
+                formatNumber(item.external_temperature, 2),
+                formatNumber(item.external_humidity, 2),
+                formatNumber(item.pressure, 2),
+                formatNumber(item.altitude, 2),
+                item.latitude !== null && item.latitude !== undefined ? item.latitude : '',
+                item.longitude !== null && item.longitude !== undefined ? item.longitude : '',
+                formatNumber(item.pi_temp, 2),
+                formatNumber(item.uv, 2),
+                formatNumber(item.ambient_light, 2),
+                formatNumber(item.uvi, 2),
+                formatNumber(item.lux, 2),
+                formatNumber(item.cpm, 2),
+                formatNumber(item.accelX, 4),
+                formatNumber(item.accelY, 4),
+                formatNumber(item.accelZ, 4),
+                formatNumber(item.gyroX, 4),
+                formatNumber(item.gyroY, 4),
+                formatNumber(item.gyroZ, 4)
+            ];
+            csvContent += row.join(",") + "\r\n";
+        });
+
+        console.log("CSV content sample:", csvContent.substring(0, 200) + "...");
+
+        // Create download link
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `cansat_data_${new Date().toISOString().replace(/[:.]/g, "-")}.csv`);
+        
+        // Required for Firefox
+        document.body.appendChild(link);
+        
+        // Trigger download
+        link.click();
+        
+        // Cleanup
+        setTimeout(() => {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 100);
+
+    } catch (error) {
+        console.error("Error exporting CSV:", error);
+        alert("Failed to export CSV: " + error.message);
+    }
+}
+
+// Helper function to format numbers safely
+function formatNumber(value, decimals) {
+    if (value === null || value === undefined) return '';
+    return Number(value).toFixed(decimals);
+}
+
+  // BUTTON MANAGEMENT
   
-    const csvContent = "data:text/csv;charset=utf-8," 
-    + headers.join(",") + "\n" 
-    + rows.map(row => row.join(",")).join("\n");
+  document.getElementById('startButton').addEventListener('click', startDataUpdate);
+  document.getElementById('stopButton').addEventListener('click', stop);
+  document.getElementById('resetButton').addEventListener('click', resetData);
+  document.getElementById('downloadCSV').addEventListener('click', exportToCSV);
+  document.getElementById('downloadMAP').addEventListener('click', downloadPath);
   
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "dados.csv");
-  link.click();
-  }
+
   </script>
   
 
