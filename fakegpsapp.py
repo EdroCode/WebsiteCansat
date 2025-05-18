@@ -36,12 +36,17 @@ def ssh_data_fetcher():
 def fake_gps_generator():
     lat = 41.5600
     lon = -8.4000
+    lat_change = 0.00002
+    lon_change = 0.00002
 
     while True:
 
 
-        lat_change = random.uniform(-0.005, 0.005) 
-        lon_change = random.uniform(-0.005, 0.005)  
+        lat_change2 = random.uniform(-0.000001, 0.000001) 
+        lon_change2 = random.uniform(-0.000001, 0.000001)
+
+        lat_change += lat_change2
+        lon_change += lon_change2
 
         lat += lat_change
         lon += lon_change
