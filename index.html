@@ -594,7 +594,7 @@
             
         }
 
-        if (pathCoords.length > 1 && lastTimestamp) {
+        if (startTime && pathCoords.length > 1 && lastTimestamp) {
             const segmentDistance = haversineDistance(
                 pathCoords[pathCoords.length - 2],
                 pathCoords[pathCoords.length - 1]
