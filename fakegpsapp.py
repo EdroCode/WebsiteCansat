@@ -91,5 +91,6 @@ if __name__ == "__main__":
     # Usa apenas 1 thread de cada vez: fake_gps_generator (teste) OU ssh_data_fetcher (produção)
     threading.Thread(target=fake_gps_generator, daemon=True).start()
     # threading.Thread(target=ssh_data_fetcher, daemon=True).start()
+
     threading.Thread(target=clock, daemon=True).start()
     app.run(host="0.0.0.0", port=5000)
