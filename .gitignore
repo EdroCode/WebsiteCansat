@@ -1,0 +1,6 @@
+# Visual Studio
+.vs/
+*.db
+*.db-shm
+*.db-wal
+*.vsidx
