@@ -44,7 +44,7 @@ def fake_gps_generator():
     while True:
 
 
-        multiplier = random.uniform(0, 0.00005) 
+        multiplier = random.uniform(0.00002, 0.00005) 
 
         lat_change = (sin(direction) * multiplier)
         lon_change = (cos(direction) * multiplier) 
