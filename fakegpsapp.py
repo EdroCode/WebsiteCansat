@@ -1,4 +1,5 @@
 
+from math import cos, pi, sin
 from flask import Flask, Response, jsonify
 from flask_cors import CORS
 import threading
@@ -36,12 +37,18 @@ def ssh_data_fetcher():
 def fake_gps_generator():
     lat = 41.5600
     lon = -8.4000
+    direction = random.uniform(-pi, pi)
+    lat_change = 0 
+    lon_change = 0
 
     while True:
 
 
-        lat_change = random.uniform(-0.005, 0.005) 
-        lon_change = random.uniform(-0.005, 0.005)  
+        multiplier = random.uniform(0, 0.00005) 
+
+        lat_change = (sin(direction) * multiplier)
+        lon_change = (cos(direction) * multiplier) 
+        direction += random.uniform(-0.4, 0.4)
 
         lat += lat_change
         lon += lon_change
