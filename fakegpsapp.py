@@ -15,24 +15,12 @@ CORS(app)
 
 data_queue = queue.Queue()
 
-# Função real de SSH (desativada durante teste)
-def ssh_data_fetcher():
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect("192.168.1.190", port=22, username="cansat", password="esca")
-    command = f"bash -i -c 'source /home/cansat/cansat/bin/activate && python3 /home/cansat/Code/CanSat/Python/Main.py'"
-    stdin, stdout, stderr = ssh.exec_command(command, get_pty=True)
 
-    pattern = re.compile(r"\{.*?\}")
-    for line in stdout:
-        match = pattern.search(line)
-        if match:
-            try:
-                data = eval(match.group()) 
-                data_queue.put(data)
-            except:
-                continue
-
+def clock():
+    global time_spent
+    while True:
+        time.sleep(1)
+        time_spent += 1
 
 def fake_gps_generator():
     lat = 41.5600
@@ -119,5 +107,5 @@ if __name__ == "__main__":
     # Usa apenas 1 thread de cada vez: fake_gps_generator (teste) OU ssh_data_fetcher (produção)
     threading.Thread(target=fake_gps_generator, daemon=True).start()
     # threading.Thread(target=ssh_data_fetcher, daemon=True).start()
-
+    threading.Thread(target=clock, daemon=True).start()
     app.run(host="0.0.0.0", port=5000)

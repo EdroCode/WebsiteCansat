@@ -312,37 +312,6 @@
     });
   
   
-    // CLOCK & TIMER
-  
-    function startTimer() {
-      startTime = Date.now();
-      intervalID = setInterval(updateElapsedTime, 1000); 
-    }
-  
-    function updateElapsedTime() {
-      if (startTime !== null) {
-        elapsedTime = Math.floor((Date.now() - startTime) / 1000); 
-        let hours = Math.floor(elapsedTime / 3600); 
-        let minutes = Math.floor((elapsedTime % 3600) / 60); 
-        let seconds = elapsedTime % 60; 
-  
-        document.getElementById('tempoDecorrido').textContent = 
-          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      }
-    }
-  
-    function stopTimer() {
-      clearInterval(intervalID); 
-      startTime = null; 
-    }
-  
-    function updateClock() {
-      const now = new Date()
-      const timeString = now.toLocaleTimeString('pt-PT');
-      document.getElementById('clock').textContent = timeString;
-    }
-    setInterval(updateClock, 1000);
-  
     // MAP
   
     let pathCoords = [];
@@ -459,15 +428,23 @@
       return R * c; // distância em metros
     }
   
+      function formatSeconds(totalSeconds) {
+        if (totalSeconds === null || totalSeconds === undefined) return "--:--:--";
+          
+          totalSeconds = Math.floor(Number(totalSeconds));
+          const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+          const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+          const seconds = String(totalSeconds % 60).padStart(2, '0');
+          return `${hours}:${minutes}:${seconds}`;
+      }
+
+
     // DATA MANEGEMENT
-    let startTime = null;
   
     function startDataUpdate() {
   
-      startTimer()
-      
       pathCoords = [];
-      startTime = Date.now();
+
   
       document.getElementById('statusText').textContent = "Atualizando...";
       document.getElementById('statusText').classList.remove('text-yellow-500');
@@ -475,6 +452,11 @@
   
       eventSource = new EventSource('http://192.168.1.92:5000/stream');
   
+
+      const now = new Date().toLocaleTimeString();
+      document.getElementById('clock').textContent = now;
+      
+
       // Basicamente o Update
   
       eventSource.onmessage = function(event) {
@@ -483,7 +465,7 @@
         document.getElementById('statusText').classList.add('text-green-500');
 
         const data = JSON.parse(event.data);
-        const now = new Date().toLocaleTimeString();
+        
 
         console.log(data);
 
@@ -514,7 +496,8 @@
           accelZ: getValueOrNull(data.accel_z),
           gyroX: getValueOrNull(data.gyro_x),
           gyroY: getValueOrNull(data.gyro_y),
-          gyroZ: getValueOrNull(data.gyro_z)
+          gyroZ: getValueOrNull(data.gyro_z),
+          elapsed_time: data.time_spent
       });
 
         // Função para atualizar gráficos com limitação de 100 pontos
@@ -540,6 +523,8 @@
         if (data.temperature_ext !== null && data.temperature_ext !== undefined) updateChart(extTempChart, now, data.temperature_ext.toFixed(1));
         if (cpmValue !== null && cpmValue !== undefined) updateChart(cpmChart, now, cpmValue.toFixed(1));
 
+
+        document.getElementById('tempoDecorrido').textContent = formatSeconds(data.time_spent);
 
 
         // Function to display value or "--" if null/undefined
@@ -575,16 +560,17 @@
         displayValue('cpmValue', cpmValue != null ? cpmValue.toFixed(2) + ' CPM' : null);
 
 
-    
 
 
-        const currentTime = Date.now();
+
         
         // Atualiza o mapa com a nova localização (only if both lat and lon are valid)
         if (data.latitude !== null && data.latitude !== undefined && 
             data.longitude !== null && data.longitude !== undefined) {
             updateMap(data.latitude, data.longitude);
         }
+
+        // Velocidade Media - Calculada atraves da formula: Distancia percorrida/tempo passado
 
         if (startTime && pathCoords.length > 1) {
             const timeElapsed = (currentTime - startTime) / 1000; // segundos
@@ -604,7 +590,6 @@
             updateChart(velChart, now, speed.toFixed(5));
         }
 
-        lastTimestamp = currentTime;
 
         const piTemp = data.pi_temp;
         let tempColor = 'green'; // Default
@@ -652,19 +637,6 @@
 
       return cpm;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   function stopDataUpdate() {
@@ -726,11 +698,9 @@
     document.getElementById('uviValue').textContent = data.uvi != null ? data.uvi.toFixed(1) : "--";
     document.getElementById('luxValue').textContent = data.lux != null ? data.lux.toFixed(2) : "--";
     document.getElementById('cpm').textContent = data.lux != null ? data.lux.toFixed(2) : "-- CPM";
-
-
-
-    startTime = null;
     document.getElementById('tempoDecorrido').textContent = "00:00:00";
+
+
   }
   
 
@@ -852,9 +822,6 @@ function formatNumber(value, decimals) {
   
 
   </script>
-  
-
-
   
 </body>
 </html>

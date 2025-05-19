@@ -5,6 +5,7 @@ import json
 import paramiko
 import re
 import queue
+import time
 
 app = Flask(__name__)
 CORS(app)  
@@ -32,6 +33,12 @@ time_spent = 0
 
 # USAR EM CASO DE DEBUG
 
+
+def clock():
+    global time_spent
+    while True:
+        time.sleep(1)
+        time_spent += 1
 
 def ssh_data_fetcher():
     print("Iniciando conexão SSH...")
@@ -79,10 +86,12 @@ def stream():
     def event_stream():
         while True:
             data = data_queue.get()
+            data['time_spent'] = time_spent
             yield f"data: {json.dumps(data)}\n\n"
     return Response(event_stream(), mimetype="text/event-stream")
 
 
 if __name__ == "__main__":
     threading.Thread(target=ssh_data_fetcher, daemon=True).start()
+    threading.Thread(target=clock, daemon=True).start()
     app.run(host="0.0.0.0", port=5000)
