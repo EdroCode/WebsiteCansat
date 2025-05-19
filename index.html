@@ -209,7 +209,7 @@
     });
 
     function trimAllCharts() {
-      const charts = [tempChart, humidityChart, pressureChart, altitudeChart];
+      const charts = [tempChart, humidityChart, pressureChart, altitudeChart, velChart, cpmChart];
       charts.forEach(chart => {
         if (chart.data.labels.length > MAX_DATA_POINTS) {
           const excess = chart.data.labels.length - MAX_DATA_POINTS;
@@ -311,39 +311,7 @@
       options: { responsive: true }
     });
   
-  
-    // CLOCK & TIMER
-  
-    function startTimer() {
-      startTime = Date.now();
-      intervalID = setInterval(updateElapsedTime, 1000); 
-    }
-  
-    function updateElapsedTime() {
-      if (startTime !== null) {
-        elapsedTime = Math.floor((Date.now() - startTime) / 1000); 
-        let hours = Math.floor(elapsedTime / 3600); 
-        let minutes = Math.floor((elapsedTime % 3600) / 60); 
-        let seconds = elapsedTime % 60; 
-  
-        document.getElementById('tempoDecorrido').textContent = 
-              `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        }
-
-    }
-  
-    function stopTimer() {
-      clearInterval(intervalID); 
-      startTime = null; 
-    }
-  
-    function updateClock() {
-      const now = new Date()
-      const timeString = now.toLocaleTimeString('pt-PT');
-      document.getElementById('clock').textContent = timeString;
-    }
-    setInterval(updateClock, 1000);
-  
+ 
     // MAP
   
     let pathCoords = [];
@@ -373,13 +341,8 @@
       marker.setLatLng(newPoint);
       map.setView(newPoint, map.getZoom());
   
-      if (pathCoords.length > 1) {
-        const des = haversineDistance(pathCoords[pathCoords.length - 2], pathCoords[pathCoords.length - 1]); // m
-        document.getElementById('deslocamento').textContent = `${(des / 1000).toFixed(2)} km`;
-        distance += des
-        document.getElementById('distanciaPercorrida').textContent = `${(distance / 1000).toFixed(2)} km`;
 
-      }
+
     }
   
     function resetMap() {
@@ -460,23 +423,37 @@
       return R * c; // distância em metros
     }
   
+      function formatSeconds(totalSeconds) {
+        if (totalSeconds === null || totalSeconds === undefined) return "--:--:--";
+          
+          totalSeconds = Math.floor(Number(totalSeconds));
+          const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+          const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+          const seconds = String(totalSeconds % 60).padStart(2, '0');
+          return `${hours}:${minutes}:${seconds}`;
+      }
+
+
     // DATA MANEGEMENT
-    let startTime = null;
   
     function startDataUpdate() {
   
-      startTimer()
-      
       pathCoords = [];
-      startTime = Date.now();
-      distance = 0;
+
   
       document.getElementById('statusText').textContent = "Atualizando...";
       document.getElementById('statusText').classList.remove('text-yellow-500');
       document.getElementById('statusText').classList.add('text-green-500');
   
-        eventSource = new EventSource(' http://192.168.1.116:5000/stream');
+
+      eventSource = new EventSource('http://192.168.1.92:5000/stream'); 
+
   
+
+      const now = new Date().toLocaleTimeString();
+      document.getElementById('clock').textContent = now;
+      
+
       // Basicamente o Update
   
       eventSource.onmessage = function(event) {
@@ -485,7 +462,7 @@
         document.getElementById('statusText').classList.add('text-green-500');
 
         const data = JSON.parse(event.data);
-        const now = new Date().toLocaleTimeString();
+        
 
         console.log(data);
 
@@ -516,7 +493,8 @@
           accelZ: getValueOrNull(data.accel_z),
           gyroX: getValueOrNull(data.gyro_x),
           gyroY: getValueOrNull(data.gyro_y),
-          gyroZ: getValueOrNull(data.gyro_z)
+          gyroZ: getValueOrNull(data.gyro_z),
+          elapsed_time: data.time_spent
       });
 
         // Função para atualizar gráficos com limitação de 100 pontos
@@ -541,7 +519,10 @@
         if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
         if (data.temperature_ext !== null && data.temperature_ext !== undefined) updateChart(extTempChart, now, data.temperature_ext.toFixed(1));
         if (cpmValue !== null && cpmValue !== undefined) updateChart(cpmChart, now, cpmValue.toFixed(1));
+        if (data.total_distance !== null && data.total_distance !== undefined) updateChart(velChart, now, data.total_distance.toFixed(1));
 
+
+        document.getElementById('tempoDecorrido').textContent = formatSeconds(data.time_spent);
 
 
         // Function to display value or "--" if null/undefined
@@ -578,10 +559,18 @@
         displayValue('cpmValue', cpmValue != null ? cpmValue.toFixed(2) + ' CPM' : null);
 
 
-    
+
+        
+        displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance / 1000).toFixed(3) + ' km' : '-- km');
+        displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' m' : '-- m');
+        displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' m/s' : '-- m/s');
+        displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' m/s' : '-- m/s');
 
 
-        const currentTime = Date.now();
+
+
+
+
         
         // Atualiza o mapa com a nova localização (only if both lat and lon are valid)
         if (data.latitude !== null && data.latitude !== undefined && 
@@ -589,28 +578,7 @@
             updateMap(data.latitude, data.longitude);
         }
 
-        if (startTime && pathCoords.length > 1) {
-            const timeElapsed = (currentTime - startTime) / 1000; // segundos
-            //const totalDistance = haversineDistance(pathCoords[0], pathCoords[pathCoords.length - 1]); // metros
-            const averageSpeed = distance / timeElapsed; // m/s
-            document.getElementById('velMed').textContent = `${averageSpeed.toFixed(2)} m/s`;
-            
-        }
 
-        if (startTime && pathCoords.length > 1 && lastTimestamp) {
-            const segmentDistance = haversineDistance(
-                pathCoords[pathCoords.length - 2],
-                pathCoords[pathCoords.length - 1]
-            );
-            const speed = calculateSpeed(currentTime, lastTimestamp, segmentDistance);
-            document.getElementById('vel').textContent = `${(speed).toFixed(2)} m/s`; // converter m/s para km/h
-            updateChart(velChart, now, speed.toFixed(5));
-          }
-
-
-
-
-        lastTimestamp = currentTime;
 
         const piTemp = data.pi_temp;
         let tempColor = 'green'; // Default
@@ -660,19 +628,6 @@
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   function stopDataUpdate() {
     document.getElementById('statusText').classList.remove('text-green-500');
     document.getElementById('statusText').classList.add('text-yellow-500');
@@ -680,7 +635,6 @@
       eventSource.close();
       eventSource = null;
     }
-    stopTimer()
   }
   
   function stop() {
@@ -703,17 +657,21 @@
     pressureChart.data.datasets[0].data = [];
     altitudeChart.data.labels = [];
     altitudeChart.data.datasets[0].data = [];
+
     velChart.data.labels = [];
     velChart.data.datasets[0].data = [];
     cpmChart.data.labels = [];
     cpmChart.data.datasets[0].data = [];
+
     tempChart.update();
     extTempChart.update()
     humidityChart.update();
     pressureChart.update();
     altitudeChart.update();
-    cpmChart.update();
-    velChart.update();
+
+    cpmChart.update()
+    velChart.update()
+
   
     document.getElementById('distanciaPercorrida').textContent = "-- km";
     document.getElementById('velMed').textContent = "-- km/h";
@@ -735,11 +693,9 @@
     document.getElementById('uviValue').textContent = data.uvi != null ? data.uvi.toFixed(1) : "--";
     document.getElementById('luxValue').textContent = data.lux != null ? data.lux.toFixed(2) : "--";
     document.getElementById('cpm').textContent = data.lux != null ? data.lux.toFixed(2) : "-- CPM";
-
-
-
-    startTime = null;
     document.getElementById('tempoDecorrido').textContent = "00:00:00";
+
+
   }
   
 
@@ -861,9 +817,6 @@ function formatNumber(value, decimals) {
   
 
   </script>
-  
-
-
   
 </body>
 </html>
