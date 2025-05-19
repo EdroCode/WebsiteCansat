@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app)
 
 data_queue = queue.Queue()
-
+time_spent = 0
 
 def clock():
     global time_spent
@@ -69,7 +69,8 @@ def fake_gps_generator():
             "ambient_light": round(random.uniform(0.5, 1), 2),
             "uvi": round(random.uniform(0, 1), 2),
             "lux": round(random.uniform(0.5, 1), 2),
-            "cpl": random.randint(1, 10)
+            "cpl": random.randint(1, 10),
+            
         }
 
 
@@ -77,23 +78,6 @@ def fake_gps_generator():
         time.sleep(1) 
 
 
-
-def shutdown():
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect("192.168.1.190", port=22, username="cansat", password="esca")
-    command = "sudo /sbin/shutdown now"
-    ssh.exec_command(command, get_pty=True)
-
-@app.route("/shutdown", methods=["POST"])
-def shutdown_pi():
-    print("Shutdown request received!")  
-    try:
-        shutdown()
-        return jsonify(status="success", message="Shutdown command sent."), 200
-    except Exception as e:
-        print("Erro ao desligar:", e)
-        return jsonify(status="error", message=str(e)), 500
 
 @app.route("/stream")
 def stream():
