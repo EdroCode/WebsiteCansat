@@ -70,8 +70,8 @@ def velocidade_media(total_distance, tempo): # m/s
     return total_distance / tempo
 
 def velocidade(tempo): # m/s
-    previous_location = coordinates_history[len(coordinates_history) - 2]
-    last_location = coordinates_history[len(coordinates_history) - 1]
+    previous_location = coordinates_history[-2]
+    last_location = coordinates_history[-1]
     return haversine_distance(previous_location, last_location) / (tempo - (tempo -2)) # Solução Robusca que precisa ser revisada
 
 def deslocamento(): # m
