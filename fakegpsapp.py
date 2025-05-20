@@ -1,5 +1,5 @@
 
-from math import cos, pi, sin
+from math import cos, pi, sin, radians, atan2, sqrt
 from flask import Flask, Response, jsonify
 from flask_cors import CORS
 import threading
@@ -22,6 +22,73 @@ def clock():
         time.sleep(1)
         time_spent += 1
 
+
+
+# Calcular Distancias etc etc
+
+coordinates_history = []  
+total_distance = 0.0
+
+def haversine_distance(coord1, coord2):
+
+    # Raio da Terra em metros
+    R = 6371000
+    
+    lat1, lon1 = coord1
+    lat2, lon2 = coord2
+    
+    phi1 = radians(lat1)
+    phi2 = radians(lat2)
+    delta_phi = radians(lat2 - lat1)
+    delta_lambda = radians(lon2 - lon1)
+    
+    a = (sin(delta_phi / 2) ** 2 +
+            cos(phi1) * cos(phi2) *
+            sin(delta_lambda / 2) ** 2)
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    
+    return R * c
+
+
+
+def update_distance(new_lat, new_lon):
+
+    global total_distance, coordinates_history
+    
+    if new_lat is None or new_lon is None:
+        return total_distance
+    
+    new_point = (new_lat, new_lon)
+    
+    if coordinates_history:
+        last_point = coordinates_history[-1]
+        segment_distance = haversine_distance(last_point, new_point)
+        total_distance += segment_distance
+    
+    coordinates_history.append(new_point)
+
+    return total_distance
+
+
+def velocidade_media(total_distance, tempo): # m/s
+    if tempo == 0:
+        return
+    else:
+        return total_distance / tempo
+
+def velocidade(): # m/s
+    if len(coordinates_history) < 2:
+        return 0
+    else:
+        previous_location = coordinates_history[-2]
+        last_location = coordinates_history[-1]
+        return haversine_distance(previous_location, last_location) # Solução Robusca que precisa ser revisada
+
+def deslocamento(): # m
+    return haversine_distance(coordinates_history[-1], coordinates_history[0])
+
+
+
 def fake_gps_generator():
     lat = 41.5600
     lon = -8.4000
@@ -30,6 +97,9 @@ def fake_gps_generator():
     lon_change = 0
 
     while True:
+
+
+        total_distance = update_distance(lat, lon)
 
 
         multiplier = random.uniform(0.00002, 0.00005) 
@@ -70,9 +140,13 @@ def fake_gps_generator():
             "uvi": round(random.uniform(0, 1), 2),
             "lux": round(random.uniform(0.5, 1), 2),
             "cpl": random.randint(1, 10),
+            "time_spent": time_spent,
+            "total_distance": total_distance,
+            "vel_media": velocidade_media(total_distance, time_spent),
+            "vel": velocidade(),
+            "des": deslocamento()
             
         }
-
 
         data_queue.put(fake_data)
         time.sleep(1) 
