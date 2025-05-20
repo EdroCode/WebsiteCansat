@@ -81,7 +81,7 @@
       </div>
       <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Distância  Percorrida</h2>
-          <p id="distanciaPercorrida" class="text-2xl">-- km</p>
+          <p id="distanciaPercorrida" class="text-2xl">-- m</p>
       </div>
       <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Deslocamento</h2>
@@ -446,12 +446,11 @@
       document.getElementById('statusText').classList.add('text-green-500');
   
 
-      eventSource = new EventSource('http://192.168.1.111:5000/stream'); 
+      eventSource = new EventSource('http://192.168.1.92:5000/stream'); 
 
   
 
-      const now = new Date().toLocaleTimeString();
-      document.getElementById('clock').textContent = now;
+
       
 
       // Basicamente o Update
@@ -461,8 +460,11 @@
         document.getElementById('statusText').classList.remove('text-red-500');
         document.getElementById('statusText').classList.add('text-green-500');
 
-        const data = JSON.parse(event.data);
+        const now = new Date().toLocaleTimeString();
+        document.getElementById('clock').textContent = now;
         
+        
+        const data = JSON.parse(event.data);
 
         console.log(data);
 
@@ -561,7 +563,7 @@
 
 
         
-        displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance / 1000).toFixed(3) + ' km' : '-- km');
+        displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance / 1000).toFixed(3) + ' m' : '-- m');
         displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' m' : '-- m');
         displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' m/s' : '-- m/s');
         displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' m/s' : '-- m/s');
@@ -613,11 +615,11 @@
 
 
   function calculateCpm(detectedParticles) {
-      const currentTime = Date.now();
-      const timeDifference = (currentTime - lastReadingTime) / 1000;  
+    const currentTime = Date.now();
+    const timeDifference = (currentTime - lastReadingTime) / 1000;  
 
-      pulseCount += detectedParticles;
-      if (timeDifference === 0) return;
+    pulseCount += detectedParticles;
+    if (timeDifference === 0) return;
 
       cpm = (pulseCount / timeDifference) * 60;  
       
@@ -657,7 +659,6 @@
     pressureChart.data.datasets[0].data = [];
     altitudeChart.data.labels = [];
     altitudeChart.data.datasets[0].data = [];
-
     velChart.data.labels = [];
     velChart.data.datasets[0].data = [];
     cpmChart.data.labels = [];
@@ -668,14 +669,14 @@
     humidityChart.update();
     pressureChart.update();
     altitudeChart.update();
-
     cpmChart.update()
     velChart.update()
 
   
-    document.getElementById('distanciaPercorrida').textContent = "-- km";
-    document.getElementById('velMed').textContent = "-- km/h";
-    document.getElementById('vel').textContent = "-- km/h";
+    document.getElementById('distanciaPercorrida').textContent = "-- m";
+    document.getElementById('velMed').textContent = "-- m/s";
+    document.getElementById('vel').textContent = "-- m/s";
+    document.getElementById('deslocamento').textContent = "-- m/s";
   
     altitudeChart.update();
   
@@ -688,12 +689,22 @@
     document.getElementById('latValue').textContent = "--";
     document.getElementById('lonValue').textContent = "--";
     document.getElementById('PIvalue').textContent = "-- °C";
+    document.getElementById('gyroX').textContent = "--";
+    document.getElementById('gyroY').textContent = "--";
+    document.getElementById('gyroZ').textContent = "--";
+    document.getElementById('accelX').textContent = "--";
+    document.getElementById('accelY').textContent = "--";
+    document.getElementById('accelZ').textContent = "--";
     document.getElementById('uvValue').textContent = data.uv != null ? data.uv.toFixed(2) : "--";
     document.getElementById('ambientLightValue').textContent = data.ambient_light != null ? data.ambient_light.toFixed(2) : "--";
     document.getElementById('uviValue').textContent = data.uvi != null ? data.uvi.toFixed(1) : "--";
     document.getElementById('luxValue').textContent = data.lux != null ? data.lux.toFixed(2) : "--";
-    document.getElementById('cpm').textContent = data.lux != null ? data.lux.toFixed(2) : "-- CPM";
-    document.getElementById('tempoDecorrido').textContent = "00:00:00";
+    document.getElementById('cpmValue').textContent = data.lux != null ? data.lux.toFixed(2) : "-- CPM";
+    document.getElementById('ambientLightValue').textContent = "-- lux";
+    document.getElementById('uviValue').textContent = "--";
+    document.getElementById('luxValue').textContent = "-- lux";
+    document.getElementById('uvValue').textContent = "-- μW/cm²";
+
 
 
   }
