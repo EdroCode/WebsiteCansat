@@ -75,7 +75,7 @@ def velocidade(tempo): # m/s
     return haversine_distance(previous_location, last_location) / (tempo - (tempo -2)) # Solução Robusca que precisa ser revisada
 
 def deslocamento(): # m
-    return haversine_distance(coordinates_history[len(coordinates_history) - 1], coordinates_history[0])
+    return haversine_distance(coordinates_history[-1], coordinates_history[0])
 
 
 
