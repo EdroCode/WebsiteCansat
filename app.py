@@ -27,8 +27,8 @@ total_distance = 0.0
 
 def haversine_distance(coord1, coord2):
 
-    # Raio da Terra em metros
-    R = 6371000
+    # Raio da Terra em km
+    R = 6371
     
     lat1, lon1 = coord1
     lat2, lon2 = coord2
@@ -66,15 +66,15 @@ def update_distance(new_lat, new_lon):
     return total_distance
 
 
-def velocidade_media(total_distance, tempo): # m/s
-    return total_distance / tempo
+def velocidade_media(total_distance, tempo): # km/s
+    return total_distance / (tempo / 3600) # (distance / (tempo / 3600) = distance * (3600 / tempo))
 
-def velocidade(tempo): # m/s
+def velocidade(tempo): # km/s
     previous_location = coordinates_history[-2]
     last_location = coordinates_history[-1]
-    return haversine_distance(previous_location, last_location) / (tempo - (tempo -2)) # Solução Robusca que precisa ser revisada
+    return haversine_distance(previous_location, last_location) * 3600 # Solução Robusca que precisa ser revisada (des / (1/3600) = des * 3600)
 
-def deslocamento(): # m
+def deslocamento(): # km
     return haversine_distance(coordinates_history[-1], coordinates_history[0])
 
 
