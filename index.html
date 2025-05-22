@@ -431,7 +431,7 @@
       document.getElementById('statusText').classList.add('text-green-500');
   
 
-      eventSource = new EventSource('http://192.168.1.92:5000/stream'); 
+        eventSource = new EventSource(' http://192.168.1.111:5000/stream'); 
 
   
 
@@ -548,10 +548,10 @@
 
 
         
-        displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance / 1000).toFixed(3) + ' m' : '-- m');
-        displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' m' : '-- m');
-        displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' m/s' : '-- m/s');
-        displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' m/s' : '-- m/s');
+        displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
+        displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' km' : '-- km');
+        displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' km/s' : '-- km/s');
+        displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' km/s' : '-- km/s');
 
 
 
