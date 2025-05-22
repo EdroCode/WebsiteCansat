@@ -291,7 +291,7 @@
       data: {
         labels: [],
         datasets: [{
-          label: 'Velocidade (m/s)', 
+          label: 'Velocidade (km/h)', 
           borderColor: 'rgb(137, 93, 193)',
           data: []
         }]
@@ -324,11 +324,6 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
     const marker = L.marker([38.0, -9.0]).addTo(map).bindPopup("Satélite");
-  
-    function calculateSpeed(currentTime, previousTime, distanceMeters) {
-      const timeDiffSec = (currentTime - previousTime) / 1000;
-      return timeDiffSec > 0 ? (distanceMeters / timeDiffSec) : 0; // m/s
-    }
   
     var distance = 0
 
