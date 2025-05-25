@@ -28,23 +28,35 @@
   </header>
 
 
-  <div class="flex justify-center gap-4 mb-6 ">
-    <button id="downloadCSV" class="hover:scale-105 transition duration-200 bg-blue-400 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl shadow-md transition">
-      Exportar CSV
-    </button>
-    <button id="downloadMAP" class="hover:scale-105 transition duration-200 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-md">
-      Exportar MAP
-    </button>
-    <a href="information.html" target="_blank">
-      <img src="./Images/information.png" alt="Logo Info" class="h-11 hover:scale-105 transition duration-200">
-    </a>
+  <div >
+    
+    <div class="flex justify-center gap-4 mb-6 ">
+      <button id="downloadCSV" class="hover:scale-105 transition duration-200 bg-blue-400 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl shadow-md transition">
+        Exportar CSV
+      </button>
+      <button id="downloadMAP" class="hover:scale-105 transition duration-200 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-md">
+        Exportar MAP
+      </button>
+      <a href="information.html" target="_blank">
+        <img src="./Images/information.png" alt="Logo Info" class="h-11 hover:scale-105 transition duration-200">
+      </a>
+    </div>
+
   </div>
 
   <hr class="my-10 border-t-4 border-gray-300">
   <h2 class="text-2xl font-bold mb-4">Painel de Controlo --
       Status: <span id="statusText" class="text-yellow-500 font-bold" >Parado</span>
+        <div class="flex items-center">
+        <span class="mr-4 text-gray-700 font-bold text-lg">m/s</span>
+        <label class="relative inline-flex  cursor-pointer">
+          <input type="checkbox" id="meterMode" class="sr-only peer">
+        <div class="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-green-500 peer-checked:after:translate-x-full peer-checked:after:bg-white peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all"></div>
+      </label>
+    </div>  
+      
   </h2>
-
+  
   <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Temperatura Interior</h2>
@@ -197,10 +209,11 @@
 
     
 
-    // GRAFICOS
+    
   
     let limitDataPoints = false;
     const MAX_DATA_POINTS = 50;
+    let METERMODE = false;
 
     document.getElementById('limitDataToggle').addEventListener('change', function() {
       limitDataPoints = this.checked;
@@ -208,6 +221,16 @@
         trimAllCharts();
       }
     });
+    
+    document.getElementById('meterMode').addEventListener('change', function() {
+      if (METERMODE === false) {
+        METERMODE = true;
+      } else {
+        METERMODE = false;
+      }
+    });
+
+    
 
     function trimAllCharts() {
       const charts = [tempChart, humidityChart, pressureChart, altitudeChart, velChart, cpmChart];
@@ -426,7 +449,7 @@
       document.getElementById('statusText').classList.add('text-green-500');
   
 
-        eventSource = new EventSource(' http://192.168.1.111:5000/stream'); 
+        eventSource = new EventSource(' http://192.168.181.239:5000/stream'); 
 
   
 
@@ -540,15 +563,27 @@
         displayValue('luxValue', data.lux != null ? data.lux.toFixed(2) + ' lux' : null);
         displayValue('cpmValue', cpmValue != null ? cpmValue.toFixed(2) + ' CPM' : null);
 
+        if (!METERMODE){
+          
+          displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
+          displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' km' : '-- km');
+          displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' km/h' : '-- km/h');
+          displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' km/h' : '-- km/h');
 
+
+        }
+        else{
+
+          displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance * 1000).toFixed(3) + ' m' : '-- m');
+          displayValue('deslocamento', data.des != null ? (data.des*1000).toFixed(2) + ' m' : '-- m');
+          displayValue('vel', data.vel != null ? (data.vel * 1000*3600).toFixed(2) + ' m/s' : '-- m/s');
+          displayValue('velMed', data.vel_media != null ? (data.vel_media * 1000*3600).toFixed(2) + ' m/s' : '-- km/s');
+
+
+        }
+        
 
         
-        displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
-        displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' km' : '-- km');
-        displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' km/s' : '-- km/s');
-        displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' km/s' : '-- km/s');
-
-
 
 
 
@@ -584,6 +619,13 @@
       stopDataUpdate(); 
       // alert("Não foi possível conectar ao servidor. Verifique a conexão.");
     };
+  
+    function convert_to_ms(){
+
+
+
+    }
+  
   }
   
 

@@ -66,10 +66,10 @@ def update_distance(new_lat, new_lon):
     return total_distance
 
 
-def velocidade_media(total_distance, tempo): # km/s
+def velocidade_media(total_distance, tempo): # km/h
     return total_distance / (tempo / 3600) # (distance / (tempo / 3600) = distance * (3600 / tempo))
 
-def velocidade(tempo): # km/s
+def velocidade(tempo): # km/h
     previous_location = coordinates_history[-2]
     last_location = coordinates_history[-1]
     return haversine_distance(previous_location, last_location) * 3600 # Solução Robusca que precisa ser revisada (des / (1/3600) = des * 3600)
