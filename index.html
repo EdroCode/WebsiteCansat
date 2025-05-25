@@ -92,19 +92,19 @@
       </div>
       <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Distância  Percorrida</h2>
-          <p id="distanciaPercorrida" class="text-2xl">-- m</p>
+          <p id="distanciaPercorrida" class="text-2xl">-- km</p>
       </div>
       <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Deslocamento</h2>
-          <p id="deslocamento" class="text-2xl">-- m</p>
+          <p id="deslocamento" class="text-2xl">-- km</p>
       </div>
       <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Velocidade</h2>
-          <p id="vel" class="text-2xl">-- m/s</p>
+          <p id="vel" class="text-2xl">-- km/h</p>
       </div>
       <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Velocidade Média</h2>
-          <p id="velMed" class="text-2xl">-- m/s</p>
+          <p id="velMed" class="text-2xl">-- km/h</p>
       </div>
       <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Aceleração (X, Y, Z)</h2>
@@ -449,7 +449,11 @@
       document.getElementById('statusText').classList.add('text-green-500');
   
 
+<<<<<<< HEAD
         eventSource = new EventSource(' http://192.168.181.239:5000/stream'); 
+=======
+        eventSource = new EventSource('http://192.168.1.111:5000/stream'); 
+>>>>>>> 1f12178500a31fb4502798645e7592932dd7b467
 
   
 
@@ -492,7 +496,7 @@
           ambient_light: getValueOrNull(data.ambient_light),
           uvi: getValueOrNull(data.uvi),
           lux: getValueOrNull(data.lux),
-          cpm: getValueOrNull(cpmValue),
+          cpm: getValueOrNull(data.cpm),
           accelX: getValueOrNull(data.accel_x),
           accelY: getValueOrNull(data.accel_y),
           accelZ: getValueOrNull(data.accel_z),
@@ -515,7 +519,7 @@
           chart.update();
         }
 
-        cpmValue = calculateCpm(data.cpl)
+//        cpmValue = calculateCpm(data.cpl)
         
         // Atualiza os gráficos, limitando a 100 pontos (only non-null values)
         if (data.temperature !== null && data.temperature !== undefined) updateChart(tempChart, now, data.temperature);
@@ -523,7 +527,7 @@
         if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, now, data.pressure.toFixed(5));
         if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
         if (data.temperature_ext !== null && data.temperature_ext !== undefined) updateChart(extTempChart, now, data.temperature_ext.toFixed(1));
-        if (cpmValue !== null && cpmValue !== undefined) updateChart(cpmChart, now, cpmValue.toFixed(1));
+        if (data.cpm !== null && data.cpm !== undefined) updateChart(cpmChart, now, data.cpm.toFixed(1));
         if (data.total_distance !== null && data.total_distance !== undefined) updateChart(velChart, now, data.vel.toFixed(1));
 
 
@@ -561,7 +565,7 @@
         displayValue('ambientLightValue', data.ambient_light != null ? data.ambient_light.toFixed(2) + ' lux' : null);
         displayValue('uviValue', data.uvi != null ? data.uvi.toFixed(1) : null); 
         displayValue('luxValue', data.lux != null ? data.lux.toFixed(2) + ' lux' : null);
-        displayValue('cpmValue', cpmValue != null ? cpmValue.toFixed(2) + ' CPM' : null);
+        displayValue('cpmValue', data.cpm != null ? data.cpm.toFixed(2) + ' CPM' : null);
 
         if (!METERMODE){
           
@@ -584,6 +588,15 @@
         
 
         
+<<<<<<< HEAD
+=======
+        displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
+        displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' km' : '-- km');
+        displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' km/h' : '-- km/h');
+        displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' km/h' : '-- km/h');
+
+
+>>>>>>> 1f12178500a31fb4502798645e7592932dd7b467
 
 
 
@@ -631,25 +644,25 @@
 
 
   // GEIGER COUNTER
-  let lastReadingTime = Date.now(); 
-  let pulseCount = 0; 
-  let cpm = 0; 
-
-
-  function calculateCpm(detectedParticles) {
-    const currentTime = Date.now();
-    const timeDifference = (currentTime - lastReadingTime) / 1000;  
-
-    pulseCount += detectedParticles;
-    if (timeDifference === 0) return;
-
-      cpm = (pulseCount / timeDifference) * 60;  
-      
-      lastReadingTime = currentTime; 
-      pulseCount = 0; 
-
-      return cpm;
-  }
+//  let lastReadingTime = Date.now(); 
+//  let pulseCount = 0; 
+//  let cpm = 0; 
+//
+//
+//  function calculateCpm(detectedParticles) {
+//   const currentTime = Date.now();
+//    const timeDifference = (currentTime - lastReadingTime) / 1000;  
+//
+//    pulseCount += detectedParticles;
+//    if (timeDifference === 0) return;
+//
+//      cpm = (pulseCount / timeDifference) * 60;  
+//      
+//      lastReadingTime = currentTime; 
+//      pulseCount = 0; 
+//
+//      return cpm;
+//  }
 
 
   function stopDataUpdate() {
@@ -695,10 +708,10 @@
     velChart.update()
 
   
-    document.getElementById('distanciaPercorrida').textContent = "-- m";
-    document.getElementById('velMed').textContent = "-- m/s";
-    document.getElementById('vel').textContent = "-- m/s";
-    document.getElementById('deslocamento').textContent = "-- m/s";
+    document.getElementById('distanciaPercorrida').textContent = "-- km";
+    document.getElementById('velMed').textContent = "-- km/h";
+    document.getElementById('vel').textContent = "-- km/h";
+    document.getElementById('deslocamento').textContent = "-- km";
   
     altitudeChart.update();
   
@@ -721,7 +734,7 @@
     document.getElementById('ambientLightValue').textContent = data.ambient_light != null ? data.ambient_light.toFixed(2) : "--";
     document.getElementById('uviValue').textContent = data.uvi != null ? data.uvi.toFixed(1) : "--";
     document.getElementById('luxValue').textContent = data.lux != null ? data.lux.toFixed(2) : "--";
-    document.getElementById('cpmValue').textContent = data.lux != null ? data.lux.toFixed(2) : "-- CPM";
+    document.getElementById('cpmValue').textContent = data.cpm != null ? data.cpm.toFixed(2) : "-- CPM";
     document.getElementById('ambientLightValue').textContent = "-- lux";
     document.getElementById('uviValue').textContent = "--";
     document.getElementById('luxValue').textContent = "-- lux";

@@ -72,7 +72,7 @@ def velocidade_media(total_distance, tempo): # km/h
 def velocidade(tempo): # km/h
     previous_location = coordinates_history[-2]
     last_location = coordinates_history[-1]
-    return haversine_distance(previous_location, last_location) * 3600 # Solução Robusca que precisa ser revisada (des / (1/3600) = des * 3600)
+    return haversine_distance(previous_location, last_location) * (3600 / tempo) # Solução Robusca que precisa ser revisada (des / (1/3600) = des * 3600)
 
 def deslocamento(): # km
     return haversine_distance(coordinates_history[-1], coordinates_history[0])
@@ -146,14 +146,17 @@ def ssh_data_fetcher():
 @app.route("/stream")
 def stream():
     def event_stream():
+        last_time = -1.0
         while True:
             data = data_queue.get()
             data['time_spent'] = time_spent
             if data['latitude'] is not None and data['longitude'] is not None:
                 data['total_distance'] = update_distance(data['latitude'], data['longitude'])
                 data['vel_media'] = velocidade_media(data['total_distance'], time_spent)
-                data['vel'] = velocidade(time_spent)
+                data['vel'] = velocidade(time_spent - last_time)
                 data['des'] = deslocamento()
+                data['cpm'] = data["cpl"] * (60 / (time_spent - last_time)),
+            last_time = time_spent
             yield f"data: {json.dumps(data)}\n\n"
             
     return Response(event_stream(), mimetype="text/event-stream")

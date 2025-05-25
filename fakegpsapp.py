@@ -14,13 +14,13 @@ app = Flask(__name__)
 CORS(app)
 
 data_queue = queue.Queue()
-time_spent = 0
+time_spent = 0.0
 
 def clock():
     global time_spent
     while True:
-        time.sleep(1)
-        time_spent += 1
+        time.sleep(0.1)
+        time_spent += 0.1
 
 
 
@@ -76,13 +76,13 @@ def velocidade_media(total_distance, tempo): # km/s
     else:
         return total_distance / (tempo / 3600) # (distance / (tempo / 3600) = distance * (3600 / tempo))
 
-def velocidade(): # km/s
+def velocidade(tempo): # km/s
     if len(coordinates_history) < 2:
         return 0
     else:
         previous_location = coordinates_history[-2]
         last_location = coordinates_history[-1]
-        return haversine_distance(previous_location, last_location) * 3600 # Solução Robusca que precisa ser revisada (des / (1/3600) = des * 3600)
+        return haversine_distance(previous_location, last_location) * (3600 / tempo)  # Solução Robusca que precisa ser revisada (des / (1/3600) = des * 3600)
 
 def deslocamento(): # km
     return haversine_distance(coordinates_history[-1], coordinates_history[0])
@@ -95,6 +95,7 @@ def fake_gps_generator():
     direction = random.uniform(-pi, pi)
     lat_change = 0 
     lon_change = 0
+    last_time = -1.0
 
     while True:
 
@@ -110,7 +111,6 @@ def fake_gps_generator():
 
         lat += lat_change
         lon += lon_change
-
 
         fake_data = {
             "latitude": lat,
@@ -139,15 +139,15 @@ def fake_gps_generator():
             "ambient_light": round(random.uniform(0.5, 1), 2),
             "uvi": round(random.uniform(0, 1), 2),
             "lux": round(random.uniform(0.5, 1), 2),
-            "cpl": random.randint(1, 10),
+            "cpm": random.randint(0, 10) * (60 / (time_spent - last_time)),
             "time_spent": time_spent,
             "total_distance": total_distance,
             "vel_media": velocidade_media(total_distance, time_spent),
-            "vel": velocidade(),
+            "vel": velocidade(time_spent - last_time),
             "des": deslocamento()
             
         }
-
+        last_time = time_spent
         data_queue.put(fake_data)
         time.sleep(1) 
 
