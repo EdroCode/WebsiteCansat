@@ -224,6 +224,9 @@
     
     document.getElementById('meterMode').addEventListener('change', function() {
       if (METERMODE === false) {
+
+
+
         METERMODE = true;
       } else {
         METERMODE = false;
@@ -449,11 +452,9 @@
       document.getElementById('statusText').classList.add('text-green-500');
   
 
-<<<<<<< HEAD
-        eventSource = new EventSource(' http://192.168.181.239:5000/stream'); 
-=======
-        eventSource = new EventSource('http://192.168.1.111:5000/stream'); 
->>>>>>> 1f12178500a31fb4502798645e7592932dd7b467
+
+      eventSource = new EventSource('http://192.168.1.92:5000/stream'); 
+
 
   
 
@@ -587,16 +588,6 @@
         }
         
 
-        
-<<<<<<< HEAD
-=======
-        displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
-        displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' km' : '-- km');
-        displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' km/h' : '-- km/h');
-        displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' km/h' : '-- km/h');
-
-
->>>>>>> 1f12178500a31fb4502798645e7592932dd7b467
 
 
 

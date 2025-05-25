@@ -17,7 +17,7 @@ data_queue = queue.Queue()
 time_spent = 0.0
 
 def clock():
-    global time_spent
+    global time_spent      
     while True:
         time.sleep(0.1)
         time_spent += 0.1
