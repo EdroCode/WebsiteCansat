@@ -184,20 +184,21 @@
       <h3 class="text-lg font-semibold mb-2">CPM</h3>
       <canvas id="cpmChart"></canvas>
     </div>
+        <div class="bg-white shadow rounded-xl p-4">
+      <h3 class="text-lg font-semibold mb-2">UV</h3>
+      <canvas id="uvChart"></canvas>
+    </div>
   </div>
-
 
   <hr class="my-10 border-t-4 border-gray-300">
   <h2 class="text-2xl font-bold mb-4 text-left">Localização em Tempo Real</h2>
   <div id="map" class="w-full h-96 rounded-xl shadow-md"></div>
   <hr class="my-10 border-t-4 border-gray-300">
 
-  
-
   <div class="mt-2 mb-4 px-2 flex justify-between items-center">
     <div class="text-left space-x-4">
       <label>
-        [ Made by <a href="https://github.com/EdroCode" target="_blank" class="text-blue-600 underline">Edro</a> ]
+        [ Made by <a href="https://github.com/EdroCode" target="_blank" class="text-blue-600 underline">Edro</a>, with help from <a href="https://github.com/SamBBret" target="_blank" class="text-blue-600 underline">Samuel Bret</a> ]
       </label>
       <span>Hora atual: <span id="clock">--:--:--</span></span>
       <span>Tempo Decorrido: <span id="tempoDecorrido">--:--:--</span></span>
@@ -207,10 +208,6 @@
 
   <script>
 
-    
-
-    
-  
     let limitDataPoints = false;
     const MAX_DATA_POINTS = 50;
     let METERMODE = false;
@@ -233,10 +230,8 @@
       }
     });
 
-    
-
     function trimAllCharts() {
-      const charts = [tempChart, humidityChart, pressureChart, altitudeChart, velChart, cpmChart];
+      const charts = [tempChart, humidityChart, pressureChart, altitudeChart, velChart, cpmChart, uvChart];
       charts.forEach(chart => {
         if (chart.data.labels.length > MAX_DATA_POINTS) {
           const excess = chart.data.labels.length - MAX_DATA_POINTS;
@@ -337,8 +332,20 @@
       },
       options: { responsive: true }
     });
+
+    const uvChart = new Chart(document.getElementById('uvChart'), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'UV (μW/cm²)', 
+          borderColor: 'rgb(245, 151, 47)',
+          data: []
+        }]
+      },
+      options: { responsive: true }
+    });
   
- 
     // MAP
   
     let pathCoords = [];
@@ -427,49 +434,45 @@
     }
     
   
-      function formatSeconds(totalSeconds) {
-        if (totalSeconds === null || totalSeconds === undefined) return "--:--:--";
+    function formatSeconds(totalSeconds) {
+      if (totalSeconds === null || totalSeconds === undefined) return "--:--:--";
           
-          totalSeconds = Math.floor(Number(totalSeconds));
-          const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-          const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-          const seconds = String(totalSeconds % 60).padStart(2, '0');
-          return `${hours}:${minutes}:${seconds}`;
-      }
+        totalSeconds = Math.floor(Number(totalSeconds));
+        const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    }
 
 
     // DATA MANEGEMENT
-
-    
 
     function startDataUpdate() {
   
       pathCoords = [];
 
-  
       document.getElementById('statusText').textContent = "Atualizando...";
       document.getElementById('statusText').classList.remove('text-yellow-500');
       document.getElementById('statusText').classList.add('text-green-500');
   
-
-
       eventSource = new EventSource('http://192.168.1.92:5000/stream'); 
 
+      function updateClock() {
+        const now = new Date();
+        document.getElementById("clock").textContent = now.toLocaleTimeString();
+      }
 
-  
+      updateClock(); 
+      setInterval(updateClock, 1000);
 
-
-      
 
       // Basicamente o Update
-  
+      
       eventSource.onmessage = function(event) {
+
         // Atualiza o status visual para indicar que os dados estão sendo recebidos
         document.getElementById('statusText').classList.remove('text-red-500');
         document.getElementById('statusText').classList.add('text-green-500');
-
-        const now = new Date().toLocaleTimeString();
-        document.getElementById('clock').textContent = now;
         
         
         const data = JSON.parse(event.data);
@@ -519,8 +522,6 @@
           chart.data.datasets[0].data.push(value);
           chart.update();
         }
-
-//        cpmValue = calculateCpm(data.cpl)
         
         // Atualiza os gráficos, limitando a 100 pontos (only non-null values)
         if (data.temperature !== null && data.temperature !== undefined) updateChart(tempChart, now, data.temperature);
@@ -530,10 +531,7 @@
         if (data.temperature_ext !== null && data.temperature_ext !== undefined) updateChart(extTempChart, now, data.temperature_ext.toFixed(1));
         if (data.cpm !== null && data.cpm !== undefined) updateChart(cpmChart, now, data.cpm.toFixed(1));
         if (data.total_distance !== null && data.total_distance !== undefined) updateChart(velChart, now, data.vel.toFixed(1));
-
-
-        document.getElementById('tempoDecorrido').textContent = formatSeconds(data.time_spent);
-
+        if (data.uv !== null && data.uv !== undefined) updateChart(uvChart, now, data.uv);
 
         // Function to display value or "--" if null/undefined
         function displayValue(elementId, value, unit = '') {
@@ -545,7 +543,7 @@
             }
         }
 
-          // Atualiza os valores de texto no dashboard
+        document.getElementById('tempoDecorrido').textContent = formatSeconds(data.time_spent);
 
         displayValue('tempValue', data.temperature ?? null, ' °C');
         displayValue('humidityValue', data.humidity ?? null, ' %');
@@ -569,37 +567,23 @@
         displayValue('cpmValue', data.cpm != null ? data.cpm.toFixed(2) + ' CPM' : null);
 
         if (!METERMODE){
-          
           displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
           displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' km' : '-- km');
           displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' km/h' : '-- km/h');
           displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' km/h' : '-- km/h');
-
-
         }
         else{
-
           displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance * 1000).toFixed(3) + ' m' : '-- m');
           displayValue('deslocamento', data.des != null ? (data.des*1000).toFixed(2) + ' m' : '-- m');
           displayValue('vel', data.vel != null ? (data.vel * 1000*3600).toFixed(2) + ' m/s' : '-- m/s');
           displayValue('velMed', data.vel_media != null ? (data.vel_media * 1000*3600).toFixed(2) + ' m/s' : '-- km/s');
-
-
         }
-        
-
-
-
-
-
-        
+          
         // Atualiza o mapa com a nova localização (only if both lat and lon are valid)
         if (data.latitude !== null && data.latitude !== undefined && 
             data.longitude !== null && data.longitude !== undefined) {
             updateMap(data.latitude, data.longitude);
         }
-
-
 
         const piTemp = data.pi_temp;
         let tempColor = 'green'; // Default
@@ -615,6 +599,7 @@
             document.getElementById('PIvalue').style.color = ''; // Reset color if null
         }
     };
+
     eventSource.onerror = function() {
       document.getElementById('statusText').textContent = "Erro na Conexão!";
       document.getElementById('statusText').classList.remove('text-green-500');
@@ -623,39 +608,8 @@
       stopDataUpdate(); 
       // alert("Não foi possível conectar ao servidor. Verifique a conexão.");
     };
-  
-    function convert_to_ms(){
-
-
-
-    }
-  
   }
   
-
-
-  // GEIGER COUNTER
-//  let lastReadingTime = Date.now(); 
-//  let pulseCount = 0; 
-//  let cpm = 0; 
-//
-//
-//  function calculateCpm(detectedParticles) {
-//   const currentTime = Date.now();
-//    const timeDifference = (currentTime - lastReadingTime) / 1000;  
-//
-//    pulseCount += detectedParticles;
-//    if (timeDifference === 0) return;
-//
-//      cpm = (pulseCount / timeDifference) * 60;  
-//      
-//      lastReadingTime = currentTime; 
-//      pulseCount = 0; 
-//
-//      return cpm;
-//  }
-
-
   function stopDataUpdate() {
     document.getElementById('statusText').classList.remove('text-green-500');
     document.getElementById('statusText').classList.add('text-yellow-500');
@@ -689,23 +643,25 @@
     velChart.data.datasets[0].data = [];
     cpmChart.data.labels = [];
     cpmChart.data.datasets[0].data = [];
+    uvChart.data.datasets[0].data = [];
+    uvChart.data.labels = [];
+
 
     tempChart.update();
     extTempChart.update()
     humidityChart.update();
     pressureChart.update();
     altitudeChart.update();
-    cpmChart.update()
-    velChart.update()
+    cpmChart.update();
+    velChart.update();
+    uvChart.update();
 
   
     document.getElementById('distanciaPercorrida').textContent = "-- km";
     document.getElementById('velMed').textContent = "-- km/h";
     document.getElementById('vel').textContent = "-- km/h";
     document.getElementById('deslocamento').textContent = "-- km";
-  
-    altitudeChart.update();
-  
+
     document.getElementById('tempValue').textContent = "-- °C";
     document.getElementById('humidityValue').textContent = "-- %";
     document.getElementById('extTempValue').textContent = "-- °C";
@@ -730,21 +686,12 @@
     document.getElementById('uviValue').textContent = "--";
     document.getElementById('luxValue').textContent = "-- lux";
     document.getElementById('uvValue').textContent = "-- μW/cm²";
-
-
-
   }
   
-
-
-  
-
   // CSV EXPORTING
-  
   let eventSource = null;
   let collectedData = [];
-  
-  // DEPOIS ATUALIZAR ISTO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // DEPOIS ATUALIZAR ISTO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  Provavelmente nao e preciso ja que n vai haver site ao publico e podemos so recolher os dados no backend
 
   function exportToCSV() {
     try {
@@ -843,7 +790,6 @@ function formatNumber(value, decimals) {
     if (value === null || value === undefined) return '';
     return Number(value).toFixed(decimals);
 }
-
 
   startDataUpdate();
   </script>
