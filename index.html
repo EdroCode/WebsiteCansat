@@ -211,6 +211,7 @@
     let limitDataPoints = false;
     const MAX_DATA_POINTS = 50;
     let METERMODE = false;
+    const now = new Date();
 
     document.getElementById('limitDataToggle').addEventListener('change', function() {
       limitDataPoints = this.checked;
@@ -447,15 +448,15 @@
 
     // DATA MANEGEMENT
 
-    function startDataUpdate() {
-  
+      function startDataUpdate() {
+        
       pathCoords = [];
 
       document.getElementById('statusText').textContent = "Atualizando...";
       document.getElementById('statusText').classList.remove('text-yellow-500');
       document.getElementById('statusText').classList.add('text-green-500');
   
-      eventSource = new EventSource('http://192.168.1.92:5000/stream'); 
+      eventSource = new EventSource('http://127.0.0.1:5000/stream'); 
 
 
       function updateClock() {

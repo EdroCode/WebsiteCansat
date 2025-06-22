@@ -21,6 +21,7 @@ global teste
 # -----------------------------------
 # Not the best code, but it works so shut up
 # -----------------------------------
+# Never
 
 
 
@@ -221,10 +222,11 @@ def data_fetcher():
                     print("Recebido:", decoded)
                     values = decoded.split(",")
 
-                    if len(values) == 25:   # n colunas
+                    if len(values) == 13:   # n colunas
                         float_values = list(map(float, values))  
                         data = convert_csv_to_json(*float_values)
                         data_queue.put(data)
+                        print("yay")
                     else:
                         print("Número incorreto de colunas:", len(values))
 
@@ -241,6 +243,7 @@ def data_fetcher():
             data_queue.put(data)
             sleep(1)
             
+
 
 
 
