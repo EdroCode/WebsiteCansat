@@ -460,8 +460,9 @@
 
 
       function updateClock() {
-        const now = new Date();
-        document.getElementById("clock").textContent = now.toLocaleTimeString();
+        const unformatednow = new Date();
+        const now = unformatednow.toLocaleTimeString('en-GB');
+        document.getElementById("clock").textContent = now;
       }
 
       updateClock(); 
@@ -529,8 +530,8 @@
         if (data.temperature !== null && data.temperature !== undefined) updateChart(tempChart, now, data.temperature);
         if (data.humidity !== null && data.humidity !== undefined) updateChart(humidityChart, now, data.humidity);
         if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, now, data.pressure.toFixed(5));
-        if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
-        if (data.temperature_ext !== null && data.temperature_ext !== undefined) updateChart(extTempChart, now, data.temperature_ext.toFixed(1));
+        if (data.altitude !== null && data.alt_bmp !== undefined) updateChart(altitudeChart, now, data.alt_bmp.toFixed(5));
+        if (data.temperature_ext !== null && data.temp_bmp !== undefined) updateChart(extTempChart, now, data.temp_bmp.toFixed(1));
         if (data.cpm !== null && data.cpm !== undefined) updateChart(cpmChart, now, data.cpm.toFixed(1));
         if (data.total_distance !== null && data.total_distance !== undefined) updateChart(velChart, now, data.vel.toFixed(1));
         if (data.uv !== null && data.uv !== undefined) updateChart(uvChart, now, data.uv);
@@ -549,10 +550,10 @@
 
         displayValue('tempValue', data.temperature ?? null, ' °C');
         displayValue('humidityValue', data.humidity ?? null, ' %');
-        displayValue('extTempValue', data.temperature_ext.toFixed(1) ?? null, ' °C');
+          displayValue('extTempValue', data.temp_bmp.toFixed(1) ?? null, ' °C');
         displayValue('extHumidityValue', data.humidity_ext.toFixed(1) ?? null, ' %');
         displayValue('pressureValue', data.pressure != null ? data.pressure.toFixed(5) : null, ' hPa');
-        displayValue('altitudeValue', data.altitude ?? null, ' m');
+        displayValue('altitudeValue', data.alt_bmp ?? null, ' m');
         displayValue('latValue', data.latitude ?? null);
         displayValue('lonValue', data.longitude ?? null);
         displayValue('PIvalue', data.pi_temp ?? null, ' °C');
