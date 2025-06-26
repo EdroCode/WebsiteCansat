@@ -4,7 +4,7 @@ from math import nan
 
 def convert_csv_to_json(
     time, inside_temp, inside_hum,
-    accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,
+    accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, lat, lon, alt,
     pressure, temp_bmp, alt_bmp, ozone,
 ):
 
@@ -20,9 +20,9 @@ def convert_csv_to_json(
         "gyro_y": gyro_y,
         "gyro_z": gyro_z,
         "pi_temp": 0,
-        "latitude": 0,
-        "longitude": 0,
-        "altitude": 0,
+        "latitude": lat,
+        "longitude": lon,
+        "altitude": alt,
         "pressure": pressure,
         "temp_bmp": temp_bmp,
         "alt_bmp": alt_bmp,
