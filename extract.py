@@ -3,35 +3,33 @@ from math import nan
 
 
 def convert_csv_to_json(
-    time, inside_temp, inside_hum,
-    accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, lat, lon, alt,
-    pressure, temp_bmp, alt_bmp, ozone,
+    time, lat, lon, alt,
 ):
 
     return {
-        "temperature": inside_temp,
-        "humidity": inside_hum,
+        "temperature": 0,
+        "humidity": 0,
         "temperature_ext": 0,
         "humidity_ext": 0,
-        "accel_x": accel_x,
-        "accel_y": accel_y,
-        "accel_z": accel_z,
-        "gyro_x": gyro_x,
-        "gyro_y": gyro_y,
-        "gyro_z": gyro_z,
+        "accel_x": 0,
+        "accel_y": 0,
+        "accel_z": 0,
+        "gyro_x": 0,
+        "gyro_y": 0,
+        "gyro_z": 0,
         "pi_temp": 0,
         "latitude": lat,
         "longitude": lon,
         "altitude": alt,
-        "pressure": pressure,
-        "temp_bmp": temp_bmp,
-        "alt_bmp": alt_bmp,
+        "pressure": 0,
+        "temp_bmp": 0,
+        "alt_bmp": 0,
         "uv": 0,
         "ambient_light": 0,
         "uvi": 0,
         "lux": 0,
         "cpl": 0,
-        "ozone": ozone
+        "ozone": 0
     }
 
 

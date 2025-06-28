@@ -530,7 +530,7 @@
         if (data.temperature !== null && data.temperature !== undefined) updateChart(tempChart, now, data.temperature);
         if (data.humidity !== null && data.humidity !== undefined) updateChart(humidityChart, now, data.humidity);
         if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, now, data.pressure.toFixed(5));
-        if (data.altitude !== null && data.alt_bmp !== undefined) updateChart(altitudeChart, now, data.alt_bmp.toFixed(5));
+        if (data.altitude !== null && data.alt_bmp !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
         if (data.temperature_ext !== null && data.temp_bmp !== undefined) updateChart(extTempChart, now, data.temp_bmp.toFixed(1));
         if (data.cpm !== null && data.cpm !== undefined) updateChart(cpmChart, now, data.cpm.toFixed(1));
         if (data.total_distance !== null && data.total_distance !== undefined) updateChart(velChart, now, data.vel.toFixed(1));
@@ -553,7 +553,7 @@
           displayValue('extTempValue', data.temp_bmp.toFixed(1) ?? null, ' °C');
         displayValue('extHumidityValue', data.humidity_ext.toFixed(1) ?? null, ' %');
         displayValue('pressureValue', data.pressure != null ? data.pressure.toFixed(5) : null, ' hPa');
-        displayValue('altitudeValue', data.alt_bmp ?? null, ' m');
+        displayValue('altitudeValue', data.altitude ?? null, ' m');
         displayValue('latValue', data.latitude ?? null);
         displayValue('lonValue', data.longitude ?? null);
         displayValue('PIvalue', data.pi_temp ?? null, ' °C');
@@ -578,8 +578,8 @@
         else{
           displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance * 1000).toFixed(3) + ' m' : '-- m');
           displayValue('deslocamento', data.des != null ? (data.des*1000).toFixed(2) + ' m' : '-- m');
-          displayValue('vel', data.vel != null ? (data.vel * 1000*3600).toFixed(2) + ' m/s' : '-- m/s');
-          displayValue('velMed', data.vel_media != null ? (data.vel_media * 1000*3600).toFixed(2) + ' m/s' : '-- km/s');
+          displayValue('vel', data.vel != null ? (data.vel * 3.6).toFixed(2) + ' m/s' : '-- m/s');
+          displayValue('velMed', data.vel_media != null ? (data.vel_media * 3.6).toFixed(2) + ' m/s' : '-- km/s');
         }
           
         // Atualiza o mapa com a nova localização (only if both lat and lon are valid)
