@@ -479,7 +479,13 @@
         
         
         const data = JSON.parse(event.data);
-
+        if (data.latitude == 0){
+          data.latitude = null
+        }
+        if (data.longitude == 0){
+          data.longitude = null
+        }
+   
         console.log(data);
 
         // Function to handle null/undefined values
@@ -550,7 +556,7 @@
 
         displayValue('tempValue', data.temperature ?? null, ' °C');
         displayValue('humidityValue', data.humidity ?? null, ' %');
-          displayValue('extTempValue', data.temp_bmp.toFixed(1) ?? null, ' °C');
+        displayValue('extTempValue', data.temp_bmp.toFixed(1) ?? null, ' °C');
         displayValue('extHumidityValue', data.humidity_ext.toFixed(1) ?? null, ' %');
         displayValue('pressureValue', data.pressure != null ? data.pressure.toFixed(5) : null, ' hPa');
         displayValue('altitudeValue', data.altitude ?? null, ' m');
