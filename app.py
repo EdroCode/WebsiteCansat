@@ -222,7 +222,7 @@ def data_fetcher():
                     print("Recebido:", decoded)
                     values = decoded.split(",")
 
-                    if len(values) == 4:   # n colunas
+                    if len(values) == 18:   # n colunas
                         float_values = list(map(float, values))  
                         data = convert_csv_to_json(*float_values)
                         data_queue.put(data)
@@ -253,17 +253,12 @@ def stream():
         last_time = -1.0
         while True:
             data = data_queue.get()
-            data['time_spent'] = time_spent
-            if data['latitude'] is not None and data['longitude'] is not None:
+            data['time'] = time_spent
+            if data['gps_valid'] == 1:
                 data['total_distance'] = update_distance(data['latitude'], data['longitude'])
                 data['vel_media'] = velocidade_media(data['total_distance'], time_spent)
-                data['vel'] = velocidade(time_spent - last_time)
                 data['des'] = deslocamento()
                 delta_time = time_spent - last_time
-                if delta_time > 0:
-                    data['cpm'] = data["cpl"] * (60 / delta_time)
-                else:
-                    data['cpm'] = 0 
             last_time = time_spent
             yield f"data: {json.dumps(data)}\n\n"
             

@@ -3,33 +3,31 @@ from math import nan
 
 
 def convert_csv_to_json(
-    time, lat, lon, alt,
+    time, temp, hum, press, alt, hea, ax, ay, az, gx, gy, gz, gpsval, lat, lon, altgps, speed, sat
 ):
 
     return {
-        "temperature": 0,
-        "humidity": 0,
-        "temperature_ext": 0,
-        "humidity_ext": 0,
-        "accel_x": 0,
-        "accel_y": 0,
-        "accel_z": 0,
-        "gyro_x": 0,
-        "gyro_y": 0,
-        "gyro_z": 0,
-        "pi_temp": 0,
+        "time": time,
+        "temperature": temp,
+        "humidity": hum,
+        "pressure": press,
+        "altitude": alt,
+
+        "heading": hea,
+
+        "accel_x": ax,
+        "accel_y": ay,
+        "accel_z": az,
+        "gyro_x": gx,
+        "gyro_y": gy,
+        "gyro_z": gz,
+
+        "gps_valid": gpsval,
         "latitude": lat,
         "longitude": lon,
-        "altitude": alt,
-        "pressure": 0,
-        "temp_bmp": 0,
-        "alt_bmp": 0,
-        "uv": 0,
-        "ambient_light": 0,
-        "uvi": 0,
-        "lux": 0,
-        "cpl": 0,
-        "ozone": 0
+        "altitude_gps": altgps,
+        "speed": speed,
+        "satellites": sat
     }
 
 

@@ -71,14 +71,6 @@
           <p id="pressureValue" class="text-2xl">-- hPa</p>
       </div>
       <div class="bg-white shadow rounded-xl p-4">
-          <h2 class="text-xl font-semibold">Temperatura Exterior</h2>
-          <p id="extTempValue" class="text-2xl">-- °C</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4">
-          <h2 class="text-xl font-semibold">Humidade Exterior</h2>
-          <p id="extHumidityValue" class="text-2xl">-- %</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Altitude</h2>
           <p id="altitudeValue" class="text-2xl">-- m</p>
       </div>
@@ -90,6 +82,10 @@
           <h2 class="text-xl font-semibold">Longitude</h2>
           <p id="lonValue" class="text-2xl">--</p>
       </div>
+      <div class="bg-white shadow rounded-xl p-4">
+          <h2 class="text-xl font-semibold">Altitude GPS</h2>
+          <p id="altitudeGPSValue" class="text-2xl">-- m</p>
+      </div>  
       <div class="bg-white shadow rounded-xl p-4">
           <h2 class="text-xl font-semibold">Distância  Percorrida</h2>
           <p id="distanciaPercorrida" class="text-2xl">-- km</p>
@@ -118,32 +114,6 @@
           <p id="gyroY" class="text-2xl">-- °/s</p>
           <p id="gyroZ" class="text-2xl">-- °/s</p>
       </div>
-      <div class="bg-white shadow rounded-xl p-4">
-          <h2 class="text-xl font-semibold">UV Sensor</h2>
-          <p id="uvValue" class="text-2xl">-- μW/cm²</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4">
-          <h2 class="text-xl font-semibold">Luz Ambiente</h2>
-          <p id="ambientLightValue" class="text-2xl">-- lux</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4">
-          <h2 class="text-xl font-semibold">Índice UV (UVI)</h2>
-          <p id="uviValue" class="text-2xl">--</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4">
-          <h2 class="text-xl font-semibold">Luminosidade (Lux)</h2>
-          <p id="luxValue" class="text-2xl">-- lux</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4">
-          <h2 class="text-xl font-semibold">CPM (Contagem de Partículas por Minuto)</h2>
-          <p id="cpmValue" class="text-2xl">-- CPM</p>
-      </div>
-      <div class="bg-white shadow rounded-xl p-4">
-          <h2 class="text-xl font-semibold">Temperatura PI</h2>
-          <p id="PIvalue" class="text-2xl">-- °C</p>
-      </div>
-
-
   </div>
 
   <hr class="my-10 border-t-4 border-gray-300">
@@ -159,10 +129,6 @@
     <div class="bg-white shadow rounded-xl p-4">
       <h3 class="text-lg font-semibold mb-2">Temperatura Interior</h3>
       <canvas id="tempChart"></canvas>
-    </div>
-    <div class="bg-white shadow rounded-xl p-4">
-      <h3 class="text-lg font-semibold mb-2">Temperatura Exterior</h3>
-      <canvas id="extTempChart"></canvas>
     </div>
     <div class="bg-white shadow rounded-xl p-4">
       <h3 class="text-lg font-semibold mb-2">Humidade Interior</h3>
@@ -181,12 +147,16 @@
       <canvas id="velChart"></canvas>
     </div>
     <div class="bg-white shadow rounded-xl p-4">
-      <h3 class="text-lg font-semibold mb-2">CPM</h3>
-      <canvas id="cpmChart"></canvas>
+      <h3 class="text-lg font-semibold mb-2">Altitude GPS</h3>
+      <canvas id="altitudeGPSChart"></canvas>
     </div>
-        <div class="bg-white shadow rounded-xl p-4">
-      <h3 class="text-lg font-semibold mb-2">UV</h3>
-      <canvas id="uvChart"></canvas>
+    <div class="bg-white shadow rounded-xl p-4">
+      <h3 class="text-lg font-semibold mb-2">Heading</h3>
+      <canvas id="headingChart"></canvas>
+    </div>
+    <div class="bg-white shadow rounded-xl p-4">
+      <h3 class="text-lg font-semibold mb-2">Satélites</h3>
+      <canvas id="satellitesChart"></canvas>
     </div>
   </div>
 
@@ -232,7 +202,7 @@
     });
 
     function trimAllCharts() {
-      const charts = [tempChart, humidityChart, pressureChart, altitudeChart, velChart, cpmChart, uvChart];
+      const charts = [tempChart, humidityChart, pressureChart, altitudeChart, velChart, altitudeGPSChart, headingChart, satellitesChart];
       charts.forEach(chart => {
         if (chart.data.labels.length > MAX_DATA_POINTS) {
           const excess = chart.data.labels.length - MAX_DATA_POINTS;
@@ -256,12 +226,12 @@
       options: { responsive: true }
     });
 
-    const extTempChart = new Chart(document.getElementById('extTempChart'), {
+    const altitudeGPSChart = new Chart(document.getElementById('altitudeGPSChart'), {
       type: 'line',
       data: {
         labels: [],
         datasets: [{
-          label: 'Temperatura (°C)',
+          label: 'Altitude GPS (m)',
           borderColor: 'rgb(255, 58, 58)',
           data: []
         }]
@@ -321,12 +291,12 @@
       options: { responsive: true }
     });
 
-    const cpmChart = new Chart(document.getElementById('cpmChart'), {
+    const headingChart = new Chart(document.getElementById('headingChart'), {
       type: 'line',
       data: {
         labels: [],
         datasets: [{
-          label: 'Contagens Por Minuto', 
+          label: 'Heading (°)', 
           borderColor: 'rgb(137, 93, 193)',
           data: []
         }]
@@ -334,12 +304,12 @@
       options: { responsive: true }
     });
 
-    const uvChart = new Chart(document.getElementById('uvChart'), {
+    const satellitesChart = new Chart(document.getElementById('satellitesChart'), {
       type: 'line',
       data: {
         labels: [],
         datasets: [{
-          label: 'UV (μW/cm²)', 
+          label: 'Satélites', 
           borderColor: 'rgb(245, 151, 47)',
           data: []
         }]
@@ -456,7 +426,7 @@
       document.getElementById('statusText').classList.remove('text-yellow-500');
       document.getElementById('statusText').classList.add('text-green-500');
   
-      eventSource = new EventSource('http://127.0.0.1:5000/stream'); 
+      eventSource = new EventSource('http://samuel-bret-laptop:5000/stream'); 
 
 
       function updateClock() {
@@ -479,10 +449,8 @@
         
         
         const data = JSON.parse(event.data);
-        if (data.latitude == 0){
+        if (data.gps_valid == 0){
           data.latitude = null
-        }
-        if (data.longitude == 0){
           data.longitude = null
         }
    
@@ -495,28 +463,32 @@
 
         // Coleta os dados para processamento posterior
         collectedData.push({
-          timestamp: now,
+          timestamp: getValueOrNull(data.time),
           temperature: getValueOrNull(data.temperature),
           humidity: getValueOrNull(data.humidity),
-          external_temperature: getValueOrNull(data.temperature_ext),
-          external_humidity: getValueOrNull(data.humidity_ext),
           pressure: getValueOrNull(data.pressure),
           altitude: getValueOrNull(data.altitude),
-          latitude: getValueOrNull(data.latitude),
-          longitude: getValueOrNull(data.longitude),
-          pi_temp: getValueOrNull(data.pi_temp),
-          uv: getValueOrNull(data.uv),
-          ambient_light: getValueOrNull(data.ambient_light),
-          uvi: getValueOrNull(data.uvi),
-          lux: getValueOrNull(data.lux),
-          cpm: getValueOrNull(data.cpm),
+
+          heading: getValueOrNull(data.heading),
+
           accelX: getValueOrNull(data.accel_x),
           accelY: getValueOrNull(data.accel_y),
           accelZ: getValueOrNull(data.accel_z),
           gyroX: getValueOrNull(data.gyro_x),
           gyroY: getValueOrNull(data.gyro_y),
           gyroZ: getValueOrNull(data.gyro_z),
-          elapsed_time: data.time_spent
+          
+          gps_valid: getValueOrNull(data.gps_valid),
+          latitude: getValueOrNull(data.latitude),
+          longitude: getValueOrNull(data.longitude),
+          altitude_gps: getValueOrNull(data.altitude_gps),
+          speed: getValueOrNull(data.speed),
+          satellites: getValueOrNull(data.satellites),
+          
+          total_distance: getValueOrNull(data.total_distance),
+          des: getValueOrNull(data.des),
+          vel_media: getValueOrNull(data.vel_media),
+          time_spent: getValueOrNull(data.time_spent),
       });
 
         // Função para atualizar gráficos com limitação de 100 pontos
@@ -536,12 +508,11 @@
         if (data.temperature !== null && data.temperature !== undefined) updateChart(tempChart, now, data.temperature);
         if (data.humidity !== null && data.humidity !== undefined) updateChart(humidityChart, now, data.humidity);
         if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, now, data.pressure.toFixed(5));
-        if (data.altitude !== null && data.alt_bmp !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
-        if (data.temperature_ext !== null && data.temp_bmp !== undefined) updateChart(extTempChart, now, data.temp_bmp.toFixed(1));
-        if (data.cpm !== null && data.cpm !== undefined) updateChart(cpmChart, now, data.cpm.toFixed(1));
-        if (data.total_distance !== null && data.total_distance !== undefined) updateChart(velChart, now, data.vel.toFixed(1));
-        if (data.uv !== null && data.uv !== undefined) updateChart(uvChart, now, data.uv);
-
+        if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
+        if (data.altitude_gps !== null && data.altitude_gps !== undefined) updateChart(altitudeGPSChart, now, data.altitude_gps.toFixed(1));
+        if (data.heading !== null && data.heading !== undefined) updateChart(headingChart, now, data.heading);
+        if (data.speed !== null && data.speed !== undefined) updateChart(velChart, now, data.speed.toFixed(1));
+        if (data.satellites !== null && data.satellites !== undefined) updateChart(satellitesChart, now, data.satellites);
         // Function to display value or "--" if null/undefined
         function displayValue(elementId, value, unit = '') {
             const element = document.getElementById(elementId);
@@ -556,29 +527,24 @@
 
         displayValue('tempValue', data.temperature ?? null, ' °C');
         displayValue('humidityValue', data.humidity ?? null, ' %');
-        displayValue('extTempValue', data.temp_bmp.toFixed(1) ?? null, ' °C');
-        displayValue('extHumidityValue', data.humidity_ext.toFixed(1) ?? null, ' %');
         displayValue('pressureValue', data.pressure != null ? data.pressure.toFixed(5) : null, ' hPa');
         displayValue('altitudeValue', data.altitude ?? null, ' m');
-        displayValue('latValue', data.latitude ?? null);
-        displayValue('lonValue', data.longitude ?? null);
-        displayValue('PIvalue', data.pi_temp ?? null, ' °C');
+        
         displayValue('accelX', data.accel_x != null ? data.accel_x.toFixed(3) + ' m/s²' : null);
         displayValue('accelY', data.accel_y != null ? data.accel_y.toFixed(3) + ' m/s²' : null);
         displayValue('accelZ', data.accel_z != null ? data.accel_z.toFixed(3) + ' m/s²' : null);
         displayValue('gyroX', data.gyro_x != null ? data.gyro_x.toFixed(3) + ' °/s' : null);
         displayValue('gyroY', data.gyro_y != null ? data.gyro_y.toFixed(3) + ' °/s' : null);
         displayValue('gyroZ', data.gyro_z != null ? data.gyro_z.toFixed(3) + ' °/s' : null);
-        displayValue('uvValue', data.uv != null ? data.uv.toFixed(2) + ' μW/cm²' : null);
-        displayValue('ambientLightValue', data.ambient_light != null ? data.ambient_light.toFixed(2) + ' lux' : null);
-        displayValue('uviValue', data.uvi != null ? data.uvi.toFixed(1) : null); 
-        displayValue('luxValue', data.lux != null ? data.lux.toFixed(2) + ' lux' : null);
-        displayValue('cpmValue', data.cpm != null ? data.cpm.toFixed(2) + ' CPM' : null);
+
+        displayValue('latValue', data.latitude ?? null);
+        displayValue('lonValue', data.longitude ?? null);
+        displayValue('altitudeGPSValue', data.altitude_gps ?? null, ' m');
 
         if (!METERMODE){
           displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
           displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' km' : '-- km');
-          displayValue('vel', data.vel != null ? data.vel.toFixed(2) + ' km/h' : '-- km/h');
+          displayValue('vel', data.speed != null ? data.speed.toFixed(2) + ' km/h' : '-- km/h');
           displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' km/h' : '-- km/h');
         }
         else{
@@ -594,19 +560,19 @@
             updateMap(data.latitude, data.longitude);
         }
 
-        const piTemp = data.pi_temp;
-        let tempColor = 'green'; // Default
+//        const piTemp = data.pi_temp;
+//       let tempColor = 'green'; // Default
 
-        if (piTemp !== null && piTemp !== undefined) {
-            if (piTemp > 75) {
-                tempColor = 'red';
-            } else if (piTemp > 60) {
-                tempColor = 'rgb(255, 148, 0)';
-            }
-            document.getElementById('PIvalue').style.color = tempColor; // Change the color of the Pi temperature value
-        } else {
-            document.getElementById('PIvalue').style.color = ''; // Reset color if null
-        }
+//        if (piTemp !== null && piTemp !== undefined) {
+//            if (piTemp > 75) {
+//                tempColor = 'red';
+//            } else if (piTemp > 60) {
+//                tempColor = 'rgb(255, 148, 0)';
+//            }
+//           document.getElementById('PIvalue').style.color = tempColor; // Change the color of the Pi temperature value
+//        } else {
+//            document.getElementById('PIvalue').style.color = ''; // Reset color if null
+//        }
     };
 
     eventSource.onerror = function() {
@@ -640,30 +606,31 @@
     collectedData = [];
     tempChart.data.labels = [];
     tempChart.data.datasets[0].data = [];
-    extTempChart.data.labels = [];
-    extTempChart.data.datasets[0].data = [];
     humidityChart.data.labels = [];
     humidityChart.data.datasets[0].data = [];
     pressureChart.data.labels = [];
     pressureChart.data.datasets[0].data = [];
     altitudeChart.data.labels = [];
-    altitudeChart.data.datasets[0].data = [];
+    altitudeChart.data.datasets[0].data = [];    
+    altitudeGPSChart.data.labels = [];
+    altitudeGPSChart.data.datasets[0].data = [];
     velChart.data.labels = [];
     velChart.data.datasets[0].data = [];
-    cpmChart.data.labels = [];
-    cpmChart.data.datasets[0].data = [];
-    uvChart.data.datasets[0].data = [];
-    uvChart.data.labels = [];
+    headingChart.data.labels = [];
+    headingChart.data.datasets[0].data = [];
+    satellitesChart.data.labels = [];   
+    satellitesChart.data.datasets[0].data = [];
+
 
 
     tempChart.update();
-    extTempChart.update()
     humidityChart.update();
     pressureChart.update();
     altitudeChart.update();
-    cpmChart.update();
     velChart.update();
-    uvChart.update();
+    altitudeGPSChart.update();
+    headingChart.update();
+    satellitesChart.update();
 
   
     document.getElementById('distanciaPercorrida').textContent = "-- km";
@@ -677,24 +644,17 @@
     document.getElementById('extHumidityValue').textContent = "-- %";
     document.getElementById('pressureValue').textContent = "-- hPa";
     document.getElementById('altitudeValue').textContent = "-- m";
+
     document.getElementById('latValue').textContent = "--";
     document.getElementById('lonValue').textContent = "--";
-    document.getElementById('PIvalue').textContent = "-- °C";
+    document.getElementById('altitudeGPSValue').textContent = "-- m";
+
     document.getElementById('gyroX').textContent = "--";
     document.getElementById('gyroY').textContent = "--";
     document.getElementById('gyroZ').textContent = "--";
     document.getElementById('accelX').textContent = "--";
     document.getElementById('accelY').textContent = "--";
     document.getElementById('accelZ').textContent = "--";
-    document.getElementById('uvValue').textContent = data.uv != null ? data.uv.toFixed(2) : "--";
-    document.getElementById('ambientLightValue').textContent = data.ambient_light != null ? data.ambient_light.toFixed(2) : "--";
-    document.getElementById('uviValue').textContent = data.uvi != null ? data.uvi.toFixed(1) : "--";
-    document.getElementById('luxValue').textContent = data.lux != null ? data.lux.toFixed(2) : "--";
-    document.getElementById('cpmValue').textContent = data.cpm != null ? data.cpm.toFixed(2) : "-- CPM";
-    document.getElementById('ambientLightValue').textContent = "-- lux";
-    document.getElementById('uviValue').textContent = "--";
-    document.getElementById('luxValue').textContent = "-- lux";
-    document.getElementById('uvValue').textContent = "-- μW/cm²";
   }
   
   // CSV EXPORTING
