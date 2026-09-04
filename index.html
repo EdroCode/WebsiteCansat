@@ -181,7 +181,8 @@
     let limitDataPoints = false;
     const MAX_DATA_POINTS = 50;
     let METERMODE = false;
-    const now = new Date();
+    const now = (new Date()).toLocaleTimeString('en-GB');
+
 
     document.getElementById('limitDataToggle').addEventListener('change', function() {
       limitDataPoints = this.checked;
@@ -509,10 +510,13 @@
         if (data.humidity !== null && data.humidity !== undefined) updateChart(humidityChart, now, data.humidity);
         if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, now, data.pressure.toFixed(5));
         if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
-        if (data.altitude_gps !== null && data.altitude_gps !== undefined) updateChart(altitudeGPSChart, now, data.altitude_gps.toFixed(1));
         if (data.heading !== null && data.heading !== undefined) updateChart(headingChart, now, data.heading);
-        if (data.speed !== null && data.speed !== undefined) updateChart(velChart, now, data.speed.toFixed(1));
-        if (data.satellites !== null && data.satellites !== undefined) updateChart(satellitesChart, now, data.satellites);
+        if (data.gps_valid == 1) {
+          if (data.speed !== null && data.speed !== undefined) updateChart(velChart, now, data.speed.toFixed(1));
+          if (data.altitude_gps !== null && data.altitude_gps !== undefined) updateChart(altitudeGPSChart, now, data.altitude_gps.toFixed(1));
+          if (data.satellites !== null && data.satellites !== undefined) updateChart(satellitesChart, now, data.satellites);
+        }
+        
         // Function to display value or "--" if null/undefined
         function displayValue(elementId, value, unit = '') {
             const element = document.getElementById(elementId);
@@ -523,7 +527,7 @@
             }
         }
 
-        document.getElementById('tempoDecorrido').textContent = formatSeconds(data.time_spent);
+        document.getElementById('tempoDecorrido').textContent = formatSeconds(data.time);
 
         displayValue('tempValue', data.temperature ?? null, ' °C');
         displayValue('humidityValue', data.humidity ?? null, ' %');
@@ -544,14 +548,14 @@
         if (!METERMODE){
           displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
           displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' km' : '-- km');
-          displayValue('vel', data.speed != null ? data.speed.toFixed(2) + ' km/h' : '-- km/h');
+          displayValue('vel', data.speed != null ? (data.speed * 3.6).toFixed(2) + ' km/h' : '-- km/h');
           displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' km/h' : '-- km/h');
         }
         else{
           displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance * 1000).toFixed(3) + ' m' : '-- m');
           displayValue('deslocamento', data.des != null ? (data.des*1000).toFixed(2) + ' m' : '-- m');
-          displayValue('vel', data.vel != null ? (data.vel * 3.6).toFixed(2) + ' m/s' : '-- m/s');
-          displayValue('velMed', data.vel_media != null ? (data.vel_media * 3.6).toFixed(2) + ' m/s' : '-- km/s');
+          displayValue('vel', data.speed != null ? (data.speed).toFixed(2) + ' m/s' : '-- m/s');
+          displayValue('velMed', data.vel_media != null ? (data.vel_media / 3.6).toFixed(2) + ' m/s' : '-- m/s');
         }
           
         // Atualiza o mapa com a nova localização (only if both lat and lon are valid)
@@ -627,11 +631,11 @@
     humidityChart.update();
     pressureChart.update();
     altitudeChart.update();
+    headingChart.update();
+  
     velChart.update();
     altitudeGPSChart.update();
-    headingChart.update();
     satellitesChart.update();
-
   
     document.getElementById('distanciaPercorrida').textContent = "-- km";
     document.getElementById('velMed').textContent = "-- km/h";

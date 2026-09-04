@@ -36,8 +36,8 @@ def haversine_distance(coord1, coord2):
     # Raio da Terra em km
     R = 6371
     
-    lat1, lon1 = coord1
-    lat2, lon2 = coord2
+    lat1, lon1, alt1 = coord1
+    lat2, lon2, alt2 = coord2
     
     phi1 = radians(lat1)
     phi2 = radians(lat2)
@@ -48,19 +48,24 @@ def haversine_distance(coord1, coord2):
          cos(phi1) * cos(phi2) *
          sin(delta_lambda / 2) ** 2)
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    horizontal_distance = R * c
+
+    real_distance = sqrt(horizontal_distance**2 + ((alt2 - alt1)/1000)**2)
+
     
-    return R * c
+    return real_distance
 
 
 
-def update_distance(new_lat, new_lon):
+def update_distance(new_lat, new_lon, new_alt):
 
     global total_distance, coordinates_history
     
     if new_lat is None or new_lon is None:
         return total_distance
     
-    new_point = (new_lat, new_lon)
+    new_point = (new_lat, new_lon, new_alt)
     
     if coordinates_history:
         last_point = coordinates_history[-1]
@@ -200,10 +205,6 @@ def gerar_csv_fake():
 
 
 
-
-
-
-
 # Requiremente PYSERIAL
 import serial.tools.list_ports 
 ports = serial.tools.list_ports.comports()
@@ -255,7 +256,7 @@ def stream():
             data = data_queue.get()
             data['time'] = time_spent
             if data['gps_valid'] == 1:
-                data['total_distance'] = update_distance(data['latitude'], data['longitude'])
+                data['total_distance'] = update_distance(data['latitude'], data['longitude'], data['altitude_gps'])
                 data['vel_media'] = velocidade_media(data['total_distance'], time_spent)
                 data['des'] = deslocamento()
                 delta_time = time_spent - last_time
