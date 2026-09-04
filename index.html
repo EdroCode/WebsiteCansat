@@ -427,7 +427,8 @@
       document.getElementById('statusText').classList.remove('text-yellow-500');
       document.getElementById('statusText').classList.add('text-green-500');
   
-      eventSource = new EventSource('http://samuel-bret-laptop:5000/stream'); 
+    eventSource = new EventSource('https://msrvc496-5000.uks1.devtunnels.ms/stream'); 
+//      eventSource = new EventSource('http://samuel-bret-laptop:5000/stream'); 
 
 
       function updateClock() {
@@ -469,17 +470,9 @@
           humidity: getValueOrNull(data.humidity),
           pressure: getValueOrNull(data.pressure),
           altitude: getValueOrNull(data.altitude),
-<<<<<<< Updated upstream
 
           heading: getValueOrNull(data.heading),
 
-=======
-          heading: getValueOrNull(data.heading),
-
-          latitude: getValueOrNull(data.latitude),
-          longitude: getValueOrNull(data.longitude),
-          
->>>>>>> Stashed changes
           accelX: getValueOrNull(data.accel_x),
           accelY: getValueOrNull(data.accel_y),
           accelZ: getValueOrNull(data.accel_z),
@@ -517,7 +510,6 @@
         if (data.temperature !== null && data.temperature !== undefined) updateChart(tempChart, now, data.temperature);
         if (data.humidity !== null && data.humidity !== undefined) updateChart(humidityChart, now, data.humidity);
         if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, now, data.pressure.toFixed(5));
-<<<<<<< Updated upstream
         if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
         if (data.heading !== null && data.heading !== undefined) updateChart(headingChart, now, data.heading);
         if (data.gps_valid == 1) {
@@ -526,10 +518,6 @@
           if (data.satellites !== null && data.satellites !== undefined) updateChart(satellitesChart, now, data.satellites);
         }
         
-=======
-        if (data.altitude !== null && data.alt_bmp !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
-
->>>>>>> Stashed changes
         // Function to display value or "--" if null/undefined
         function displayValue(elementId, value, unit = '') {
             const element = document.getElementById(elementId);
@@ -546,12 +534,7 @@
         displayValue('humidityValue', data.humidity ?? null, ' %');
         displayValue('pressureValue', data.pressure != null ? data.pressure.toFixed(5) : null, ' hPa');
         displayValue('altitudeValue', data.altitude ?? null, ' m');
-<<<<<<< Updated upstream
         
-=======
-
-
->>>>>>> Stashed changes
         displayValue('accelX', data.accel_x != null ? data.accel_x.toFixed(3) + ' m/s²' : null);
         displayValue('accelY', data.accel_y != null ? data.accel_y.toFixed(3) + ' m/s²' : null);
         displayValue('accelZ', data.accel_z != null ? data.accel_z.toFixed(3) + ' m/s²' : null);
@@ -561,10 +544,7 @@
 
         displayValue('latValue', data.latitude ?? null);
         displayValue('lonValue', data.longitude ?? null);
-<<<<<<< Updated upstream
         displayValue('altitudeGPSValue', data.altitude_gps ?? null, ' m');
-=======
->>>>>>> Stashed changes
 
         if (!METERMODE){
           displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
@@ -665,15 +645,14 @@
 
     document.getElementById('tempValue').textContent = "-- °C";
     document.getElementById('humidityValue').textContent = "-- %";
+    document.getElementById('extTempValue').textContent = "-- °C";
+    document.getElementById('extHumidityValue').textContent = "-- %";
     document.getElementById('pressureValue').textContent = "-- hPa";
     document.getElementById('altitudeValue').textContent = "-- m";
 
-<<<<<<< Updated upstream
     document.getElementById('latValue').textContent = "--";
     document.getElementById('lonValue').textContent = "--";
     document.getElementById('altitudeGPSValue').textContent = "-- m";
-=======
->>>>>>> Stashed changes
 
     document.getElementById('gyroX').textContent = "--";
     document.getElementById('gyroY').textContent = "--";
@@ -681,14 +660,6 @@
     document.getElementById('accelX').textContent = "--";
     document.getElementById('accelY').textContent = "--";
     document.getElementById('accelZ').textContent = "--";
-<<<<<<< Updated upstream
-=======
-
-
-    document.getElementById('latValue').textContent = "--";
-    document.getElementById('lonValue').textContent = "--";
-    document.getElementById('')
->>>>>>> Stashed changes
   }
   
   // CSV EXPORTING
@@ -710,23 +681,25 @@
             'Timestamp',
             'Temperature (°C)',
             'Humidity (%)',
+            'External Temperature (°C)',
+            'External Humidity (%)',
             'Pressure (hPa)',
             'Altitude (m)',
-            'Heading (°)',
-
+            'Latitude',
+            'Longitude',
+            'PI Temperature (°C)',
+            'UV (μW/cm²)',
+            'Ambient Light (lux)',
+            'UVI',
+            'Lux (lux)',
+            'CPM',
             'Acceleration X (m/s²)',
             'Acceleration Y (m/s²)',
             'Acceleration Z (m/s²)',
             'Gyroscope X (°/s)',
             'Gyroscope Y (°/s)',
-            'Gyroscope Z (°/s)',
-
-            'Latitude',
-            'Longitude',
-            'GPS speed (m/s)', 
-            'Sattelites',
-            'battery'
-            ];
+            'Gyroscope Z (°/s)'
+        ];
 
         // Prepare CSV content
         let csvContent = headers.join(",") + "\r\n";
@@ -736,22 +709,24 @@
                 item.timestamp || '',
                 formatNumber(item.temperature, 2),
                 formatNumber(item.humidity, 2),
+                formatNumber(item.external_temperature, 2),
+                formatNumber(item.external_humidity, 2),
                 formatNumber(item.pressure, 2),
                 formatNumber(item.altitude, 2),
-                formatNumber(item.heading, 2),
-
+                item.latitude !== null && item.latitude !== undefined ? item.latitude : '',
+                item.longitude !== null && item.longitude !== undefined ? item.longitude : '',
+                formatNumber(item.pi_temp, 2),
+                formatNumber(item.uv, 2),
+                formatNumber(item.ambient_light, 2),
+                formatNumber(item.uvi, 2),
+                formatNumber(item.lux, 2),
+                formatNumber(item.cpm, 2),
                 formatNumber(item.accelX, 4),
                 formatNumber(item.accelY, 4),
                 formatNumber(item.accelZ, 4),
                 formatNumber(item.gyroX, 4),
                 formatNumber(item.gyroY, 4),
-                formatNumber(item.gyroZ, 4),
-
-                item.latitude !== null && item.latitude !== undefined ? item.latitude : '',
-                item.longitude !== null && item.longitude !== undefined ? item.longitude : '',
-                item.gps_speed !== null && item.gps_speed !== undefined ? item.gps_speed : '',
-                item.sattelites !== null && item.sattelites !== undefined ? item.sattelites : '',
-                item.battery !== null && item.battery !== undefined ? item.battery : ''
+                formatNumber(item.gyroZ, 4)
             ];
             csvContent += row.join(",") + "\r\n";
         });
