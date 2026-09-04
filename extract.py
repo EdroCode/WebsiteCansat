@@ -7,6 +7,7 @@ def convert_csv_to_json(
 ):
 
     return {
+<<<<<<< Updated upstream
         "time": time,
         "temperature": temp,
         "humidity": hum,
@@ -28,6 +29,22 @@ def convert_csv_to_json(
         "altitude_gps": altgps,
         "speed": speed,
         "satellites": sat
+=======
+        "temperature": 0,
+        "humidity": 0,
+        "pressure": 0,
+        "altitude": alt,
+        "accel_x": 0,
+        "accel_y": 0,
+        "accel_z": 0,
+        "gyro_x": 0,
+        "gyro_y": 0,
+        "gyro_z": 0,
+        "pi_temp": 0,
+        "latitude": lat,
+        "longitude": lon,
+        
+>>>>>>> Stashed changes
     }
 
 

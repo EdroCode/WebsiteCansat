@@ -4,7 +4,7 @@
 
 #define RADIO_SS    10  // NSS
 #define RADIO_DIO0  2   
-#define RADIO_RST   9   
+#define RADIO_RST   3   
 
 SX1278 radio = new Module(RADIO_SS, RADIO_DIO0, RADIO_RST, -1);
 FastCRC8 CRC8;
