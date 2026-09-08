@@ -1,127 +1,174 @@
-#include <RadioLib.h>
-#include <FastCRC.h>
+#include <Arduino.h>
 #include <SPI.h>
+#include <RadioLib.h>
 
-#define RADIO_SS    10  // NSS
-#define RADIO_DIO0  2   
-#define RADIO_RST   3   
+// ============================================================
+// LILYGO T3-S3 SX1262 pins
+// ============================================================
 
-SX1278 radio = new Module(RADIO_SS, RADIO_DIO0, RADIO_RST, -1);
-FastCRC8 CRC8;
+#define LORA_SCK    5
+#define LORA_MISO   3
+#define LORA_MOSI   6
+#define LORA_CS     7
+#define LORA_RST    8
+#define LORA_DIO1  33
+#define LORA_BUSY  34
 
-struct __attribute__((packed)) FULLDATA {
-  uint8_t gps_crc;              
-  uint16_t number;              
+// ============================================================
+// LoRa settings
+// These MUST match the transmitter
+// ============================================================
 
-  int16_t inside_temp;          
-  int16_t inside_hum;          
-  int16_t external_temp;        
-  int16_t external_hum;        
+#define LORA_FREQUENCY 868.0
 
-  float accel_x;                
-  float accel_y;                
-  float accel_z;                
+#define LORA_BANDWIDTH 125.0
+#define LORA_SPREADING_FACTOR 9
+#define LORA_CODING_RATE 7
+#define LORA_SYNC_WORD 0x12
+#define LORA_POWER 22
+#define LORA_PREAMBLE 1.8
 
-  float gyro_x;                
-  float gyro_y;                
-  float gyro_z;                
+// ============================================================
+// Radio
+// ============================================================
 
-  int16_t pi_temp;              
+SX1262 radio = new Module(
+    LORA_CS,
+    LORA_DIO1,
+    LORA_RST,
+    LORA_BUSY
+);
 
-  int32_t lat;                  
-  int32_t lon;                  
-  uint16_t alt;                
+// Packet received flag
+volatile bool packetReceived = false;
 
-  uint16_t pressure;            
-  int16_t temp_bmp;            
-  uint16_t alt_bmp;            
-
-  uint8_t uv;                  
-  uint8_t ambient_light;        
-  uint8_t uvi;                  
-  uint8_t lux;                  
-
-  uint8_t cpl;                  
-};
-
-uint8_t buffer[sizeof(FULLDATA)];  
-FULLDATA received;                 
-
-void setup() {
-  Serial.begin(9600);
-  while (!Serial); 
-
-  Serial.println(F("[SX1278] Initializing ..."));
-  int state = radio.begin(439.666, 31.25, 12, 7, 0x12, 17, 8, 0);
-
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("[SX1278] Radio init successful!"));
-  } else {
-    Serial.print(F("[SX1278] Failed, code "));
-    Serial.println(state);
-    while (true); 
-  }
-
-  radio.setCRC(false); 
-  Serial.println("Receiver ready.");
-
-  radio.startReceive();
+void setFlag()
+{
+    packetReceived = true;
 }
 
-void loop() {
-  if (radio.available()) {
-    int len = radio.readData(buffer, sizeof(buffer));
-   
-    if (len == sizeof(FULLDATA)) {
-      memcpy(&received, buffer, sizeof(FULLDATA));
+// ============================================================
+// SETUP
+// ============================================================
 
-      uint8_t computed_crc = CRC8.smbus(buffer + 1, sizeof(FULLDATA) - 1);
-      if (computed_crc != received.gps_crc) {
-        Serial.println("CRC MISMATCH! Data corrupted.");
-      } else {
-        Serial.println(F("\n--- Received Packet ---"));
-        Serial.print(F("Packet #: "));            Serial.println(received.number);
-       
-        Serial.print(F("Inside Temp: "));          Serial.print(received.inside_temp/100.0); Serial.println(F(" °C"));
-        Serial.print(F("Inside Humidity: "));      Serial.print(received.inside_hum/100.0); Serial.println(F(" %"));
-        Serial.print(F("External Temp: "));        Serial.print(received.external_temp/100.0); Serial.println(F(" °C"));
-        Serial.print(F("External Humidity: "));    Serial.print(received.external_hum/100.0); Serial.println(F(" %"));
-       
-        Serial.print(F("Accel X: "));              Serial.print(received.accel_x); Serial.println(F(" m/s²"));
-        Serial.print(F("Accel Y: "));              Serial.print(received.accel_y); Serial.println(F(" m/s²"));
-        Serial.print(F("Accel Z: "));              Serial.print(received.accel_z); Serial.println(F(" m/s²"));
-       
-        Serial.print(F("Gyro X: "));               Serial.print(received.gyro_x); Serial.println(F(" rad/s"));
-        Serial.print(F("Gyro Y: "));               Serial.print(received.gyro_y); Serial.println(F(" rad/s"));
-        Serial.print(F("Gyro Z: "));               Serial.print(received.gyro_z); Serial.println(F(" rad/s"));
-       
-        Serial.print(F("Pi Temp: "));              Serial.print(received.pi_temp/10.0); Serial.println(F(" °C"));
-       
-        Serial.print(F("Latitude: "));             Serial.print(received.lat/1000000.0, 6); Serial.println(F(" °"));
-        Serial.print(F("Longitude: "));            Serial.print(received.lon/1000000.0, 6); Serial.println(F(" °"));
-        Serial.print(F("Altitude: "));             Serial.print(received.alt/100.0); Serial.println(F(" m"));
-       
-        Serial.print(F("Pressure: "));             Serial.print(received.pressure/100.0); Serial.println(F(" hPa"));
-        Serial.print(F("BMP Temp: "));             Serial.print(received.temp_bmp/100.0); Serial.println(F(" °C"));
-        Serial.print(F("BMP Alt: "));              Serial.print(received.alt_bmp/100.0); Serial.println(F(" m"));
-       
-        Serial.print(F("UV: "));                   Serial.println(received.uv);
-        Serial.print(F("Ambient Light: "));        Serial.println(received.ambient_light);
-        Serial.print(F("UVI: "));                  Serial.println(received.uvi);
-        Serial.print(F("Lux: "));                  Serial.println(received.lux);
-        Serial.print(F("CPL: "));                  Serial.println(received.cpl);
-       
-        Serial.println(F("------------------------"));
-      }
-    } else {
-      Serial.print(F("Received unexpected packet size: "));
-      Serial.print(len);
-      Serial.print(F(" expected: "));
-      Serial.println(sizeof(FULLDATA));
+void setup()
+{
+    Serial.begin(115200);
+    delay(1000);
+
+    Serial.println();
+    Serial.println("================================");
+    Serial.println(" LILYGO T3-S3 LoRa Receiver");
+    Serial.println("================================");
+
+    // Start SPI using the T3-S3 SX1262 pins
+    SPI.begin(
+        LORA_SCK,
+        LORA_MISO,
+        LORA_MOSI
+    );
+
+    Serial.println("Initializing SX1262...");
+
+    // Initialize radio
+    int state = radio.begin(
+        LORA_FREQUENCY,
+        LORA_BANDWIDTH,
+        LORA_SPREADING_FACTOR,
+        LORA_CODING_RATE,
+        LORA_SYNC_WORD,
+        LORA_POWER,
+        LORA_PREAMBLE
+    );
+
+    if (state != RADIOLIB_ERR_NONE)
+    {
+        Serial.print("LoRa initialization failed, code: ");
+        Serial.println(state);
+
+        while (true)
+        {
+            delay(1000);
+        }
     }
 
-    radio.startReceive(); 
-  }
- 
-  delay(10);
+    Serial.println("LoRa initialized successfully!");
+
+    // Configure DIO1 interrupt
+    radio.setDio1Action(setFlag);
+
+    // Start receiving
+    state = radio.startReceive();
+
+    if (state != RADIOLIB_ERR_NONE)
+    {
+        Serial.print("Failed to start receiver, code: ");
+        Serial.println(state);
+
+        while (true)
+        {
+            delay(1000);
+        }
+    }
+
+    Serial.println("Listening for LoRa packets...");
+    Serial.println();
+}
+
+// ============================================================
+// LOOP
+// ============================================================
+
+void loop()
+{
+    if (!packetReceived)
+    {
+        return;
+    }
+
+    // Clear flag
+    packetReceived = false;
+
+    // Read packet
+    String receivedData;
+
+    int state = radio.readData(receivedData);
+
+    if (state == RADIOLIB_ERR_NONE)
+    {
+        Serial.println("================================");
+        Serial.println("PACKET RECEIVED");
+        Serial.println("================================");
+
+        Serial.print("Data: ");
+        Serial.println(receivedData);
+
+        Serial.print("RSSI: ");
+        Serial.print(radio.getRSSI());
+        Serial.println(" dBm");
+
+        Serial.print("SNR:  ");
+        Serial.print(radio.getSNR());
+        Serial.println(" dB");
+
+        Serial.print("Frequency error: ");
+        Serial.print(radio.getFrequencyError());
+        Serial.println(" Hz");
+
+        Serial.println();
+    }
+    else
+    {
+        Serial.print("Error reading packet: ");
+        Serial.println(state);
+    }
+
+    // Go back to receive mode
+    state = radio.startReceive();
+
+    if (state != RADIOLIB_ERR_NONE)
+    {
+        Serial.print("Failed to restart receiver: ");
+        Serial.println(state);
+    }
 }

@@ -427,8 +427,8 @@
       document.getElementById('statusText').classList.remove('text-yellow-500');
       document.getElementById('statusText').classList.add('text-green-500');
   
-    eventSource = new EventSource('https://msrvc496-5000.uks1.devtunnels.ms/stream'); 
-//      eventSource = new EventSource('http://samuel-bret-laptop:5000/stream'); 
+//    eventSource = new EventSource('https://msrvc496-5000.uks1.devtunnels.ms/stream'); 
+      eventSource = new EventSource('http://samuel-bret-laptop:5000/stream'); 
 
 
       function updateClock() {
@@ -444,6 +444,8 @@
       // Basicamente o Update
       
       eventSource.onmessage = function(event) {
+
+        const now = (new Date()).toLocaleTimeString('en-GB');
 
         // Atualiza o status visual para indicar que os dados estão sendo recebidos
         document.getElementById('statusText').classList.remove('text-red-500');
@@ -494,15 +496,9 @@
       });
 
         // Função para atualizar gráficos com limitação de 100 pontos
-        function updateChart(chart, label, value) {
-          if (value === null) return;
-  
-          if (limitDataPoints && chart.data.labels.length >= MAX_DATA_POINTS) {
-            chart.data.labels.shift();
-            chart.data.datasets[0].data.shift();
-          }
-          chart.data.labels.push(label);
-          chart.data.datasets[0].data.push(value);
+        function updateChart(chart, valuex, valuey) {
+
+          chart.data.datasets[0].data.push({ x: valuex, y: valuey });
           chart.update();
         }
         
