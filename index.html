@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Limiar Dashboard</title>
   <link rel="icon" type="image/x-icon" href="./Images/dashboard.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, userscalable=no">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -175,7 +176,6 @@
     </div>
   </div>
 
-
   <script>
 
     let limitDataPoints = false;
@@ -214,109 +214,66 @@
       });
     }
 
-    const tempChart = new Chart(document.getElementById('tempChart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Temperatura (°C)',
-          borderColor: 'rgb(255, 99, 132)',
-          data: []
-        }]
-      },
-      options: { responsive: true }
-    });
+    function formatChartTime(value) {
+      const totalSeconds = Number(value) || 0;
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    }
 
-    const altitudeGPSChart = new Chart(document.getElementById('altitudeGPSChart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Altitude GPS (m)',
-          borderColor: 'rgb(255, 58, 58)',
-          data: []
-        }]
-      },
-      options: { responsive: true }
-    });
-  
-    const humidityChart = new Chart(document.getElementById('humidityChart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Humidade (%)',
-          borderColor: 'rgb(75, 192, 192)',
-          data: []
-        }]
-      },
-      options: { responsive: true }
-    });
-  
-    const pressureChart = new Chart(document.getElementById('pressureChart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Pressão (hPa)', 
-          borderColor: 'rgb(36, 199, 36)',
-          data: []
-        }]
-      },
-      options: { responsive: true }
-    });
-  
-    const altitudeChart = new Chart(document.getElementById('altitudeChart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Altitude (m)', 
-          borderColor: 'rgb(255, 182, 24)',
-          data: []
-        }]
-      },
-      options: { responsive: true }
-    });
+    function createTimeChart(canvasId, label, color) {
+      return new Chart(document.getElementById(canvasId), {
+        type: 'line',
+        data: {
+          datasets: [{
+            label,
+            borderColor: color,
+            data: [],
+            pointRadius: 1.5,
+            pointHitRadius: 6,
+            tension: 0.2
+          }]
+        },
+        options: {
+          responsive: true,
+          animation: false,
+          interaction: {
+            mode: 'nearest',
+            intersect: false
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              position: 'bottom',
+              min: 0,
+              ticks: {
+                callback: function(value) {
+                  return formatChartTime(value);
+                }
+              }
+            },
+            y: {
+              beginAtZero: false
+            }
+          },
+          plugins: {
+            legend: {
+              display: true
+            }
+          }
+        }
+      });
+    }
 
-    const velChart = new Chart(document.getElementById('velChart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Velocidade (km/h)', 
-          borderColor: 'rgb(137, 93, 193)',
-          data: []
-        }]
-      },
-      options: { responsive: true }
-    });
-
-    const headingChart = new Chart(document.getElementById('headingChart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Heading (°)', 
-          borderColor: 'rgb(137, 93, 193)',
-          data: []
-        }]
-      },
-      options: { responsive: true }
-    });
-
-    const satellitesChart = new Chart(document.getElementById('satellitesChart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Satélites', 
-          borderColor: 'rgb(245, 151, 47)',
-          data: []
-        }]
-      },
-      options: { responsive: true }
-    });
+    const tempChart = createTimeChart('tempChart', 'Temperatura (°C)', 'rgb(255, 99, 132)');
+    const altitudeGPSChart = createTimeChart('altitudeGPSChart', 'Altitude GPS (m)', 'rgb(255, 58, 58)');
+    const humidityChart = createTimeChart('humidityChart', 'Humidade (%)', 'rgb(75, 192, 192)');
+    const pressureChart = createTimeChart('pressureChart', 'Pressão (hPa)', 'rgb(36, 199, 36)');
+    const altitudeChart = createTimeChart('altitudeChart', 'Altitude (m)', 'rgb(255, 182, 24)');
+    const velChart = createTimeChart('velChart', 'Velocidade (km/h)', 'rgb(137, 93, 193)');
+    const headingChart = createTimeChart('headingChart', 'Heading (°)', 'rgb(137, 93, 193)');
+    const satellitesChart = createTimeChart('satellitesChart', 'Satélites', 'rgb(245, 151, 47)');
   
     // MAP
   
@@ -427,7 +384,6 @@
       document.getElementById('statusText').classList.remove('text-yellow-500');
       document.getElementById('statusText').classList.add('text-green-500');
   
-//    eventSource = new EventSource('https://msrvc496-5000.uks1.devtunnels.ms/stream'); 
       eventSource = new EventSource('http://samuel-bret-laptop:5000/stream'); 
 
 
@@ -495,23 +451,39 @@
           time_spent: getValueOrNull(data.time_spent),
       });
 
-        // Função para atualizar gráficos com limitação de 100 pontos
-        function updateChart(chart, valuex, valuey) {
+        // Função para atualizar gráficos com espaçamento proporcional ao tempo decorrido.
+        function updateChart(chart, value, timeValue) {
+          if (value === null || value === undefined || timeValue === null || timeValue === undefined) return;
 
-          chart.data.datasets[0].data.push({ x: valuex, y: valuey });
+          const point = { x: Number(timeValue), y: Number(value) };
+
+          if (limitDataPoints && chart.data.datasets[0].data.length >= MAX_DATA_POINTS) {
+            chart.data.datasets[0].data.shift();
+          }
+
+          chart.data.datasets[0].data.push(point);
+
+          const xs = chart.data.datasets[0].data.map(p => p.x);
+          const minX = Math.min.apply(null, xs);
+          const maxX = Math.max.apply(null, xs);
+
+          chart.options.scales.x.min = Math.max(0, minX - 2);
+          chart.options.scales.x.max = maxX + 2;
           chart.update();
         }
         
         // Atualiza os gráficos, limitando a 100 pontos (only non-null values)
-        if (data.temperature !== null && data.temperature !== undefined) updateChart(tempChart, now, data.temperature);
-        if (data.humidity !== null && data.humidity !== undefined) updateChart(humidityChart, now, data.humidity);
-        if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, now, data.pressure.toFixed(5));
-        if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, now, data.altitude.toFixed(5));
-        if (data.heading !== null && data.heading !== undefined) updateChart(headingChart, now, data.heading);
+        const timeValue = Number(data.time ?? 0);
+
+        if (data.temperature !== null && data.temperature !== undefined) updateChart(tempChart, data.temperature, timeValue);
+        if (data.humidity !== null && data.humidity !== undefined) updateChart(humidityChart, data.humidity, timeValue);
+        if (data.pressure !== null && data.pressure !== undefined) updateChart(pressureChart, data.pressure, timeValue);
+        if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, data.altitude, timeValue);
+        if (data.heading !== null && data.heading !== undefined) updateChart(headingChart, data.heading, timeValue);
         if (data.gps_valid == 1) {
-          if (data.speed !== null && data.speed !== undefined) updateChart(velChart, now, data.speed.toFixed(1));
-          if (data.altitude_gps !== null && data.altitude_gps !== undefined) updateChart(altitudeGPSChart, now, data.altitude_gps.toFixed(1));
-          if (data.satellites !== null && data.satellites !== undefined) updateChart(satellitesChart, now, data.satellites);
+          if (data.speed !== null && data.speed !== undefined) updateChart(velChart, data.speed * 3.6, timeValue);
+          if (data.altitude_gps !== null && data.altitude_gps !== undefined) updateChart(altitudeGPSChart, data.altitude_gps, timeValue);
+          if (data.satellites !== null && data.satellites !== undefined) updateChart(satellitesChart, data.satellites, timeValue);
         }
         
         // Function to display value or "--" if null/undefined
@@ -605,31 +577,37 @@
     pathCoords = [];
     
     collectedData = [];
-    tempChart.data.labels = [];
     tempChart.data.datasets[0].data = [];
-    humidityChart.data.labels = [];
     humidityChart.data.datasets[0].data = [];
-    pressureChart.data.labels = [];
     pressureChart.data.datasets[0].data = [];
-    altitudeChart.data.labels = [];
-    altitudeChart.data.datasets[0].data = [];    
-    altitudeGPSChart.data.labels = [];
+    altitudeChart.data.datasets[0].data = [];
     altitudeGPSChart.data.datasets[0].data = [];
-    velChart.data.labels = [];
     velChart.data.datasets[0].data = [];
-    headingChart.data.labels = [];
     headingChart.data.datasets[0].data = [];
-    satellitesChart.data.labels = [];   
     satellitesChart.data.datasets[0].data = [];
 
-
+    tempChart.options.scales.x.min = 0;
+    tempChart.options.scales.x.max = 1;
+    humidityChart.options.scales.x.min = 0;
+    humidityChart.options.scales.x.max = 1;
+    pressureChart.options.scales.x.min = 0;
+    pressureChart.options.scales.x.max = 1;
+    altitudeChart.options.scales.x.min = 0;
+    altitudeChart.options.scales.x.max = 1;
+    altitudeGPSChart.options.scales.x.min = 0;
+    altitudeGPSChart.options.scales.x.max = 1;
+    velChart.options.scales.x.min = 0;
+    velChart.options.scales.x.max = 1;
+    headingChart.options.scales.x.min = 0;
+    headingChart.options.scales.x.max = 1;
+    satellitesChart.options.scales.x.min = 0;
+    satellitesChart.options.scales.x.max = 1;
 
     tempChart.update();
     humidityChart.update();
     pressureChart.update();
     altitudeChart.update();
     headingChart.update();
-  
     velChart.update();
     altitudeGPSChart.update();
     satellitesChart.update();
