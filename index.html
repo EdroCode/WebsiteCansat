@@ -51,7 +51,7 @@
         <div class="flex items-center">
         <span class="mr-4 text-gray-700 font-bold text-lg">m/s</span>
         <label class="relative inline-flex  cursor-pointer">
-          <input type="checkbox" id="meterMode" class="sr-only peer">
+          <input type="checkbox" id="meterMode" class="sr-only peer", checked>
         <div class="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-green-500 peer-checked:after:translate-x-full peer-checked:after:bg-white peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all"></div>
       </label>
     </div>  
@@ -271,7 +271,7 @@
     const humidityChart = createTimeChart('humidityChart', 'Humidade (%)', 'rgb(75, 192, 192)');
     const pressureChart = createTimeChart('pressureChart', 'Pressão (hPa)', 'rgb(36, 199, 36)');
     const altitudeChart = createTimeChart('altitudeChart', 'Altitude (m)', 'rgb(255, 182, 24)');
-    const velChart = createTimeChart('velChart', 'Velocidade (km/h)', 'rgb(137, 93, 193)');
+    const velChart = createTimeChart('velChart', 'Velocidade (m/s)', 'rgb(137, 93, 193)');
     const headingChart = createTimeChart('headingChart', 'Heading (°)', 'rgb(137, 93, 193)');
     const satellitesChart = createTimeChart('satellitesChart', 'Satélites', 'rgb(245, 151, 47)');
   
@@ -481,7 +481,7 @@
         if (data.altitude !== null && data.altitude !== undefined) updateChart(altitudeChart, data.altitude, timeValue);
         if (data.heading !== null && data.heading !== undefined) updateChart(headingChart, data.heading, timeValue);
         if (data.gps_valid == 1) {
-          if (data.speed !== null && data.speed !== undefined) updateChart(velChart, data.speed * 3.6, timeValue);
+          if (data.speed !== null && data.speed !== undefined) updateChart(velChart, data.speed, timeValue);
           if (data.altitude_gps !== null && data.altitude_gps !== undefined) updateChart(altitudeGPSChart, data.altitude_gps, timeValue);
           if (data.satellites !== null && data.satellites !== undefined) updateChart(satellitesChart, data.satellites, timeValue);
         }
@@ -515,16 +515,16 @@
         displayValue('altitudeGPSValue', data.altitude_gps ?? null, ' m');
 
         if (!METERMODE){
-          displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' km' : '-- km');
-          displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' km' : '-- km');
+          displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance / 1000).toFixed(3) + ' km' : '-- km');
+          displayValue('deslocamento', data.des != null ? (data.des/1000).toFixed(2) + ' km' : '-- km');
           displayValue('vel', data.speed != null ? (data.speed * 3.6).toFixed(2) + ' km/h' : '-- km/h');
-          displayValue('velMed', data.vel_media != null ? data.vel_media.toFixed(2) + ' km/h' : '-- km/h');
+          displayValue('velMed', data.vel_media != null ? (data.vel_media * 3.6).toFixed(2) + ' km/h' : '-- km/h');
         }
         else{
-          displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance * 1000).toFixed(3) + ' m' : '-- m');
-          displayValue('deslocamento', data.des != null ? (data.des*1000).toFixed(2) + ' m' : '-- m');
+          displayValue('distanciaPercorrida', data.total_distance != null ? (data.total_distance).toFixed(3) + ' m' : '-- m');
+          displayValue('deslocamento', data.des != null ? data.des.toFixed(2) + ' m' : '-- m');
           displayValue('vel', data.speed != null ? (data.speed).toFixed(2) + ' m/s' : '-- m/s');
-          displayValue('velMed', data.vel_media != null ? (data.vel_media / 3.6).toFixed(2) + ' m/s' : '-- m/s');
+          displayValue('velMed', data.vel_media != null ? (data.vel_media).toFixed(2) + ' m/s' : '-- m/s');
         }
           
         // Atualiza o mapa com a nova localização (only if both lat and lon are valid)
