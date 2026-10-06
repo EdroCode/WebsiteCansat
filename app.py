@@ -10,6 +10,12 @@ import re
 import queue
 import time
 
+import requests
+
+RENDER_URL = "https://render-server-t78x.onrender.com/telemetry"
+TELEMETRY_TOKEN = "gefycu39f67q89fn740q8gyewfh7480ywf6q480g74q30fnhuq0f"
+
+
 app = Flask(__name__)
 CORS(app)  
 
@@ -22,6 +28,29 @@ global teste
 # Not the best code, but it works so shut up
 # -----------------------------------
 # Never
+
+def send_to_render(data):
+    try:
+        response = requests.post(
+            RENDER_URL,
+            json=data,
+            headers={
+                "Authorization": f"Bearer {TELEMETRY_TOKEN}",
+                "Content-Type": "application/json",
+            },
+            timeout=5,
+        )
+
+        if response.status_code != 202:
+            print(
+                f"Render rejected telemetry: "
+                f"{response.status_code} {response.text}"
+            )
+        else:
+            print("Telemetry sent to Render.")
+
+    except requests.RequestException as e:
+        print(f"Could not send telemetry to Render: {e}")
 
 
 
@@ -226,7 +255,7 @@ def data_fetcher():
                     if len(values) == 18:   # n colunas
                         float_values = list(map(float, values))  
                         data = convert_csv_to_json(*float_values)
-                        data_queue.put(data)
+                        send_to_render(data)
                         print("yay")
                     else:
                         print("Número incorreto de colunas:", len(values))
@@ -303,6 +332,5 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
 
     
-
 
 
