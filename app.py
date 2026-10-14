@@ -41,7 +41,7 @@ def send_to_render(data):
             timeout=5,
         )
 
-        if response.status_code != 202:
+        if response.status_code != 200:
             print(
                 f"Render rejected telemetry: "
                 f"{response.status_code} {response.text}"
@@ -241,7 +241,9 @@ serialInst = serial.Serial()
 
 portList = []
 
+
 def data_fetcher():
+    last_time = 0
     while True:
         if teste == False:
             if serialInst.in_waiting:
@@ -255,6 +257,15 @@ def data_fetcher():
                     if len(values) == 18:   # n colunas
                         float_values = list(map(float, values))  
                         data = convert_csv_to_json(*float_values)
+
+                        time_spent = data["time"]
+                        if data['gps_valid'] == 1:
+                            data['total_distance'] = update_distance(data['latitude'], data['longitude'], data['altitude_gps'])
+                            data['vel_media'] = velocidade_media(data['total_distance'], time_spent)
+                            data['des'] = deslocamento()
+                            delta_time = time_spent - last_time
+                        last_time = time_spent
+
                         send_to_render(data)
                         print("yay")
                     else:
